@@ -6,6 +6,9 @@ This is the tai dev framework repository. tai is a lightweight, installable work
 
 ```
 tai/
+├── cli/                ← Rust CLI binary (`tai install`, `tai doctor`, etc.)
+│   ├── Cargo.toml
+│   └── src/
 ├── commands/           ← slash commands → ~/.claude/commands/tai-*.md
 ├── agents/             ← subagents → ~/.claude/agents/tai-*.md
 ├── skills/             ← skills → ~/.claude/skills/tai-*/SKILL.md
@@ -27,11 +30,23 @@ tai/
 ## Install / uninstall
 
 ```bash
-./setup      # symlinks commands + agents + skills to ~/.claude/
-./uninstall  # removes all symlinks
+# Via CLI (preferred):
+tai install      # symlinks commands + agents + skills to ~/.claude/
+tai uninstall    # removes all symlinks
+
+# Or via bash scripts:
+./setup          # same as tai install
+./uninstall      # same as tai uninstall
 ```
 
-`setup` is idempotent — safe to re-run after adding commands, agents, or skills.
+Both are idempotent — safe to re-run after adding commands, agents, or skills.
+
+### Building the CLI
+
+```bash
+cd cli && cargo install --path .   # puts `tai` on PATH
+# or: cd cli && cargo build --release
+```
 
 ## Conventions
 
@@ -44,12 +59,16 @@ tai/
 ## Adding a new command
 
 ```bash
-# Scaffold with the built-in tool:
+# Via CLI:
+tai add command my-thing   # scaffolds commands/tai-my-thing.md
+tai install                # refresh symlinks
+
+# Via slash command:
 /tai-new-command
 
-# Or create manually:
+# Or manually:
 # 1. Create commands/tai-<name>.md with frontmatter
-# 2. Run ./setup to refresh symlinks
+# 2. Run tai install (or ./setup)
 ```
 
 Frontmatter format:
@@ -132,8 +151,9 @@ Commands, agents, and skills can live in three places (highest → lowest priori
 ## Documentation
 
 Full docs in `docs/`:
+- `docs/cli.md` — Rust CLI reference (`tai`, `tai doctor`, etc.)
 - `docs/tiers.md` — tier breakdown and decision guide
-- `docs/commands.md` — all commands with args, model, behavior
+- `docs/commands.md` — all slash commands with args, model, behavior
 - `docs/agents.md` — agents reference (global + SafeClaw template agents)
 - `docs/skills.md` — skills system and all available skills
 - `docs/hooks.md` — hook scripts and configuration

@@ -1,6 +1,10 @@
 # Personal add-ons — not tracked in the public repo
 extensions/
 
+# Rust / Cargo
+cli/target/
+cli/Cargo.lock
+
 # macOS
 .DS_Store
 .DS_Store?
@@ -17,3 +21,7 @@ extensions/
 # Local state
 .env
 *.local
+
+# Misc
+*.log
+tmp/
