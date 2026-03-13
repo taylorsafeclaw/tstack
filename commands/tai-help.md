@@ -1,25 +1,27 @@
 ---
 name: tai-help
-description: List all available tai commands and agents, grouped by tier.
+description: List all available tai commands, agents, and skills, grouped by tier.
 argument-hint: ""
 model: haiku
 ---
 
-List all available tai commands and agents.
+List all available tai commands, agents, and skills.
 
 ## Commands to run
 
 ```bash
 ls ~/.claude/commands/tai-*.md 2>/dev/null
 ls ~/.claude/agents/tai-*.md 2>/dev/null
+ls ~/.claude/skills/tai-*/SKILL.md 2>/dev/null
 ls .claude/commands/tai-*.md 2>/dev/null
 ls .claude/agents/tai-*.md 2>/dev/null
+ls .claude/skills/tai-*/SKILL.md 2>/dev/null
 ```
 
 ## Output format
 
 ```
-tai v0.1.0 — personal dev framework for Claude Code
+tai v<version> — personal dev framework for Claude Code
 
 ━━━ TIER 1: TASK ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 /tai-task <what>        Quick fix → commit (no PR)
@@ -41,6 +43,7 @@ tai v0.1.0 — personal dev framework for Claude Code
 /tai-validate           lint + build + test
 /tai-test [mode]        Browser tests (playwright/dogfood)
 /tai-review [scope]     Code review
+/tai-audit [scope]      Security + performance audit (skill)
 
 ━━━ GIT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 /tai-commit [msg]       Validate + commit
@@ -58,11 +61,17 @@ tai v0.1.0 — personal dev framework for Claude Code
 /tai-new-command        Scaffold new command
 /tai-help               This list
 
+━━━ SKILLS (global) ━━━━━━━━━━━━━━━━━━━━━━━━━━
+[list from ~/.claude/skills/tai-*/SKILL.md — show name + description from frontmatter]
+
+━━━ SKILLS (this project) ━━━━━━━━━━━━━━━━━━━━
+[list from .claude/skills/tai-*/SKILL.md — show name + description]
+
 ━━━ AGENTS (this project) ━━━━━━━━━━━━━━━━━━━━
-[list from .claude/agents/tai-*.md]
+[list from .claude/agents/tai-*.md — show name + description]
 
 ━━━ AGENTS (global) ━━━━━━━━━━━━━━━━━━━━━━━━━━
-[list from ~/.claude/agents/tai-*.md]
+[list from ~/.claude/agents/tai-*.md — show name + description]
 ```
 
 Read the version from `~/Development/tai/VERSION` if it exists.

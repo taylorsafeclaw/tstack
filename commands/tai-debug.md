@@ -20,19 +20,15 @@ From `$ARGUMENTS`:
 - What file and line is it pointing to?
 - What is the call stack?
 
-### 2. Read the source
+### 2. Read source + check history (parallel)
 
-Read the specific file and line from the stack trace. Read 20-30 lines around the error point to get context.
+Use parallel tool calls to gather information simultaneously:
 
-### 3. Trace execution
+**Read the source:**
+- Read the specific file and line from the stack trace
+- Read 20-30 lines around the error point for context
 
-Work backwards from the error:
-- What called this code?
-- What was the input that triggered this?
-- What assumption is violated?
-
-### 4. Check recent changes
-
+**Check recent changes:**
 ```bash
 git log --oneline -10
 git diff HEAD~3..HEAD -- <affected-file>
@@ -40,9 +36,23 @@ git diff HEAD~3..HEAD -- <affected-file>
 
 Was this working before? What recent change might have caused this?
 
+### 3. Check for known patterns
+
+If the error is a build or lint error, check if the quality pipeline has a known fix pattern:
+- TypeScript type errors → check for missing imports, wrong types, stale generated code
+- Lint errors → check the specific rule and auto-fix option
+- Test failures → read the test to understand what assertion failed
+
+### 4. Trace execution
+
+Work backwards from the error:
+- What called this code?
+- What was the input that triggered this?
+- What assumption is violated?
+
 ### 5. Search for related code
 
-Grep for:
+Use the Grep tool to search for:
 - The function name
 - The type or interface involved
 - Any config key mentioned in the error
@@ -67,5 +77,6 @@ If no: explain alternatives.
 
 - Root cause first — don't layer patches on symptoms
 - Check git history — most bugs are caused by recent changes
+- Use parallel tool calls where possible to speed up diagnosis
 - If stuck after 2 attempts at diagnosing, stop and ask the user for more context
 - Never apply a fix that could break other things without calling it out

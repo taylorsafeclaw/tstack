@@ -1,0 +1,16 @@
+[package]
+name = "tai"
+version = "0.2.0"
+edition = "2021"
+description = "CLI for the tai dev framework"
+license = "MIT"
+
+[dependencies]
+clap = { version = "4", features = ["derive", "color"] }
+owo-colors = "4"
+comfy-table = "7"
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+dirs = "6"
+anyhow = "1"
+indicatif = "0.17"

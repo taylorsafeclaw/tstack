@@ -19,12 +19,22 @@ Ask (or infer from context):
 
 If the agent references project-specific things (Convex, specific UI patterns), it's project-level.
 
-## Step 2 — Clarify model
+## Step 2 — Clarify model and capabilities
 
 Based on the purpose:
-- **haiku** — validation, status checks, simple reporting
-- **sonnet** — implementation, code generation, review
-- **opus** — complex research, planning, multi-step reasoning
+- **haiku** — validation, status checks, simple reporting (fast, cheap)
+- **sonnet** — implementation, code generation, review (balanced)
+- **opus** — complex research, planning, multi-step reasoning (powerful)
+
+Determine tools needed:
+- Read-only agent: `Read, Grep, Glob, Bash`
+- Implementation agent: `Read, Grep, Glob, Edit, Write, Bash`
+- Validation agent: `Bash, Read, Grep, Glob`
+
+Determine max turns:
+- Simple agents (validation, status): 10-15
+- Implementation agents: 25-30
+- Research agents: 15-20
 
 ## Step 3 — Generate the agent file
 
@@ -35,26 +45,38 @@ Create `tai-<name>.md` with this structure:
 name: tai-<name>
 description: <one-line description of what this agent does>
 model: <haiku|sonnet|opus>
+tools: <comma-separated list of tools>
+maxTurns: <number>
 ---
 
 You are the tai <name>. <one sentence purpose statement>.
+
+## Bootstrap
+
+Read these files first to understand project context:
+- `CLAUDE.md` (project root)
+- [any other files relevant to this agent's domain]
 
 ## What you do
 
 [Clear description of the agent's job]
 
-## Bootstrap (if needed)
-
-[Files to read at startup to understand project context]
-
 ## Behavior
 
 [Step-by-step what the agent does]
 
+## Return format
+
+When spawned by an orchestrator, return:
+1. What was done
+2. Files affected
+3. Result/status
+
 ## Rules
 
 - [Key constraints]
-- [What it does NOT do]
+- [Scope lock — what this agent does NOT do]
+- [Error recovery — max attempts, when to stop]
 ```
 
 ## Step 4 — Write the file

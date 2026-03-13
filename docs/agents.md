@@ -7,33 +7,60 @@ Agents are specialized subprocesses with domain knowledge baked in. tai commands
 When a tai command (e.g., `/tai-feature`) determines a task touches the backend, it spawns the `tai-convex` agent rather than implementing inline. The agent:
 1. Reads its bootstrap files (schema, patterns, conventions)
 2. Does the work in its domain
-3. Commits atomically
-4. Returns an API shape or summary to the orchestrator
+3. Runs quality checks
+4. Commits atomically
+5. Returns an API shape or summary to the orchestrator
 
-This keeps context clean and allows parallel domain execution via Agent Teams.
+Commands check agent availability via Glob before spawning:
+```
+.claude/agents/tai-convex.md    → project-specific
+~/.claude/agents/tai-*.md       → global
+```
+
+If no domain agents are found, commands fall back to `tai-implementer` or direct implementation.
 
 ---
 
 ## Global agents
 
-Global agents live in `~/Development/tai/agents/` and are available in every project.
+Global agents live in `~/Development/tai/agents/` and are available in every project after running `./setup`.
 
-Currently empty — agents start as project-specific and are promoted to global when proven useful across multiple projects. See [extensions.md](extensions.md) for the promotion path.
+### `tai-explorer` — Codebase exploration specialist
+**Model:** haiku | **Tools:** Read, Grep, Glob, Bash | **Max turns:** 20
+
+Fast, read-only codebase exploration. Finds files, understands patterns, traces code paths, gathers context.
+
+**Scope lock:** Read-only — does not modify any files.
+
+**Used by:** tai-context, tai-feature, tai-task, tai-scope, tai-execute (context gathering steps)
+
+**Return format:** Structured findings with file:line references, patterns observed, gotchas.
+
+---
+
+### `tai-implementer` — Generic implementation agent
+**Model:** sonnet | **Tools:** Read, Grep, Glob, Edit, Write, Bash | **Max turns:** 30
+
+General-purpose implementation agent for projects without domain-specific agents. Reads CLAUDE.md, follows project patterns, runs quality pipeline.
+
+**Used by:** tai-task, tai-feature, tai-implement, tai-execute (fallback when no domain agents)
+
+**Return format:** What was implemented, files modified, quality result.
 
 ---
 
 ## SafeClaw project agents
 
-Installed by `~/Development/tai/templates/safeclaw/install` into `<project>/.claude/agents/`.
-
-These override global agents with the same name.
+Installed by `~/Development/tai/templates/safeclaw/install` into `<project>/.claude/agents/`. These override global agents with the same name.
 
 ---
 
 ### `tai-convex` — Convex backend specialist
-**Model:** sonnet
+**Model:** sonnet | **Tools:** Read, Grep, Glob, Edit, Write, Bash | **Max turns:** 30
 
 Handles all Convex backend work: schema, mutations, queries, actions.
+
+**Scope lock:** Backend only — does not modify files in `app/`, `components/`, or frontend code.
 
 **Bootstrap (reads before every task):**
 - `convex/schema.ts` — data model and indexes
@@ -49,90 +76,52 @@ Handles all Convex backend work: schema, mutations, queries, actions.
 - Every filtered field needs an index in `schema.ts`
 - Significant operations get logged to `action_logs`
 
-**Epilogue:** `pnpm build` → `pnpm test` → `/simplify`
+**Error recovery:** Max 2 build/test fix attempts, then stop and report.
+
+**Return contract:** What was implemented, files modified, API shape `{ mutationName: { args, returns } }`, quality result.
 
 ---
 
 ### `tai-ui` — UI specialist
-**Model:** sonnet
+**Model:** sonnet | **Tools:** Read, Grep, Glob, Edit, Write, Bash | **Max turns:** 30 | **Skills:** tai-frontend-design
 
 Handles all frontend/component work: React components, pages, UI state.
 
-**Preamble:** Invokes `/frontend-design` skill **first** before writing any code.
+**Scope lock:** UI only — does not modify files in `convex/`.
 
-**Bootstrap (reads before every task):**
-- `app/globals.css` — CSS custom properties, utility classes
-- `components/product/workspace-shell.tsx` — main workspace layout pattern
-- Relevant tab components in `components/product/`
-- `lib/utils.ts` — `cn()` helper
-- `components/ui/` — available primitives
+**Skills:** `tai-frontend-design` loaded automatically via frontmatter.
 
-**Design system:**
-- Cards: `soft-card` / `soft-card-strong` classes
-- Glassmorphic: `backdrop-filter: blur(12px)`, `rgba(255,255,255,0.6)` background
-- Components: Radix primitives + CVA + `cn()` — always
-- Pattern: entity list → entity card grid → add dialog → detail sheet
-- Data: `useQuery` / `useMutation` from `convex/react` — no business logic in components
-- Light theme only — no dark mode
+**Design system:** soft-card/soft-card-strong cards, glassmorphic effects, Radix + CVA + `cn()`, entity card grid pattern, light theme only.
 
-**Epilogue:** `pnpm build` → `/simplify`
+**API shape:** When receiving API shape from orchestrator, uses exact function names and types. Imports from `convex/_generated/api`.
+
+**Error recovery:** Max 2 build fix attempts, then stop and report.
+
+**Return contract:** Components created/modified, UX decisions, files changed, quality result.
 
 ---
 
-### `tai-validate` — Quality validator
-**Model:** haiku
+### `tai-validate` — Quality validator + SafeClaw checks
+**Model:** haiku | **Tools:** Bash, Read, Grep, Glob | **Max turns:** 10
 
-Runs the quality pipeline and reports results. Does **not** fix anything.
+Runs the quality pipeline AND SafeClaw-specific static checks:
 
-```
-pnpm lint   → stop on failure, report errors
-pnpm build  → stop on failure, report errors
-pnpm test   → stop on failure, report failures
-```
+**Quality pipeline:** lint → build → test (stop on first failure)
 
-Single pass. Pastes exact error output. Invoked automatically at the end of every tier's pipeline.
+**SafeClaw checks (after pipeline passes):**
+- Auth: all mutations have `getUserOrThrow`
+- Encryption: no plaintext API keys
+- Indexes: query filters have matching indexes in schema.ts
+- State machine: no direct status mutations bypassing workspaces.ts
 
 ---
 
 ### `tai-reviewer` — Code reviewer
-**Model:** sonnet
+**Model:** sonnet | **Tools:** Read, Grep, Glob, Bash | **Max turns:** 15
 
-Reviews code for real issues only — no nitpicks.
+Reviews code for security, logic errors, and SafeClaw convention violations. Can load `tai-audit` skill for deeper security analysis.
 
-**Checks:**
-
-*Security:*
-- Convex mutations missing `getUserOrThrow` / auth check
-- API keys or secrets hardcoded (should use Convex env vars or `crypto.ts`)
-- Sensitive data in action logs or console output
-- User input passed to exec without sanitization
-
-*Logic errors:*
-- State machine violations — invalid status transitions
-- Missing error handling for Fly.io API calls
-- Race conditions in workspace lifecycle
-- Mutations that don't check workspace ownership
-
-*SafeClaw conventions:*
-- Encrypted fields must use `convex/lib/crypto.ts`
-- Workspace status transitions via `workspaces.ts` state machine
-- New tables need indexes in `schema.ts`
-- Environment variables in `env.ts` (Zod-validated)
-
-**Output format:**
-```
-## SafeClaw Code Review
-
-### Issues
-**[SECURITY]** convex/workspaces/mutations.ts:42
-Missing auth check.
-Fix: add getUserOrThrow and verify workspace.userId === user._id
-
-### No issues
-[if clean] No significant issues found.
-```
-
-Single pass. Does **not** fix issues — reports them.
+Single pass, high-confidence issues only.
 
 ---
 
@@ -140,21 +129,7 @@ Single pass. Does **not** fix issues — reports them.
 
 ### `tai-schema-change` — Schema modification guide
 
-Guided Convex schema modification workflow. Invoked as `/tai-schema-change <description>`.
-
-**Pipeline:**
-1. Reads `convex/schema.ts` and `convex/lib/validators.ts`
-2. Shows a change plan with all affected files
-3. Asks "Does this look right?"
-4. Makes changes in order: schema → validators → mutations/queries → actions → tests
-5. Runs `pnpm build` + `pnpm test`
-6. Commits with `feat(schema): <description>`
-
-**Rules:**
-- Never removes a field without checking all usages first
-- Indexes every field used in `.filter()` or `.withIndex()`
-- Prefers `v.optional()` for additive changes (backwards compatible)
-- Confirms with user before destructive changes
+Guided Convex schema modification workflow. Reads schema + validators, shows change plan, gets confirmation, makes changes in order, runs quality pipeline.
 
 ---
 
@@ -165,23 +140,29 @@ Use `/tai-new-agent` to scaffold a new agent. Or create a `.md` file manually:
 ```markdown
 ---
 name: tai-<name>
-description: <one-line description — this is how commands discover agents>
-model: sonnet
+description: <one-line description>
+model: sonnet | opus | haiku
+tools: Read, Grep, Glob, Edit, Write, Bash
+maxTurns: 30
 ---
 
-You are the tai <name> specialist. <domain-specific instructions>
+You are the tai <name>. <purpose statement>
 
 ## Bootstrap
-Read these files before starting:
+Read these files first:
 - ...
 
-## Patterns
-...
+## Scope lock
+What this agent does NOT do.
 
-## Epilogue
-After implementing:
-1. pnpm build — fix errors
-2. [commit instructions]
+## Behavior
+Step-by-step workflow.
+
+## Error recovery
+Max attempts, when to stop.
+
+## Return contract
+What to return to the orchestrator.
 ```
 
 Place in:

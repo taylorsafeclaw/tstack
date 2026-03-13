@@ -52,6 +52,8 @@ Rules for the roadmap:
 - Features are ordered by dependency (unblocked ones first)
 - Success criteria are verifiable from the codebase — not vague
 - No requirement IDs, no coverage matrices — just clear goals
+- **Size each feature to be completable in a fresh context window (~50% utilization)** — if a feature seems larger, split it
+- Each feature plan should be self-contained — an agent spawned with just the plan + CLAUDE.md should be able to execute it
 
 ### 3. State
 
@@ -65,20 +67,23 @@ Create `.tai/state.json`:
   "startedAt": "<ISO date>",
   "features": {
     "1": { "status": "ready" },
-    "2": { "status": "ready" },
-    ...
+    "2": { "status": "ready" }
   }
 }
 ```
 
-Create `.tai/features/` directory.
+Create `.tai/features/` directory with a subdirectory per feature:
+```bash
+mkdir -p .tai/features/1 .tai/features/2 .tai/features/3
+# (one directory per feature in the roadmap)
+```
 
 ### 4. Present
 
 Show the user:
 - The roadmap summary (feature list + goals)
 - Current feature to tackle next
-- How to proceed: `/tai-next` to start working
+- How to proceed: `/tai-scope` → `/tai-plan` → `/tai-execute` → `/tai-next`
 
 Ask: "Does this roadmap look right? Any features to add, remove, or reorder?"
 
@@ -87,7 +92,7 @@ Wait for confirmation before declaring the mission started.
 ### 5. Start feature 1
 
 After confirmation, say:
-> "Mission started. Feature 1: <name>. Run `/tai-scope` to research it, then `/tai-plan` to plan it, then `/tai-execute` to build it. Or run `/tai-next` to kick off the full pipeline."
+> "Mission started. Feature 1: <name>. Run `/tai-scope` to research it, then `/tai-plan` to plan it, then `/tai-execute` to build it. Or run `/tai-next` after building to ship + advance."
 
 ## Rules
 
@@ -95,3 +100,4 @@ After confirmation, say:
 - Features should be days of work max — split if larger
 - Each feature gets its own git branch and PR
 - Missions can span multiple Claude Code sessions — `.tai/` is the persistent state
+- Size features for context window efficiency — don't create features so large they can't be completed in one session

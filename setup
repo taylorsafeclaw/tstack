@@ -6,7 +6,7 @@ TAI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLAUDE_DIR="$HOME/.claude"
 
 # Ensure target directories exist
-mkdir -p "$CLAUDE_DIR/commands" "$CLAUDE_DIR/agents"
+mkdir -p "$CLAUDE_DIR/commands" "$CLAUDE_DIR/agents" "$CLAUDE_DIR/skills"
 
 echo "tai setup — installing from $TAI_DIR"
 echo ""
@@ -45,12 +45,34 @@ for src in "$TAI_DIR/agents"/tai-*.md; do
   AGENT_COUNT=$((AGENT_COUNT + 1))
 done
 
+# Symlink skills (directory-level symlinks)
+SKILL_COUNT=0
+for src in "$TAI_DIR/skills"/tai-*/; do
+  [ -d "$src" ] || continue
+  dirname="$(basename "$src")"
+  dst="$CLAUDE_DIR/skills/$dirname"
+  if [ -L "$dst" ]; then
+    rm "$dst"
+  elif [ -d "$dst" ]; then
+    echo "  SKIP $dirname (non-symlink directory exists at $dst — remove manually)"
+    continue
+  fi
+  ln -s "$src" "$dst"
+  echo "  ✓ skills/$dirname"
+  SKILL_COUNT=$((SKILL_COUNT + 1))
+done
+
 echo ""
-echo "Installed: $COMMAND_COUNT commands, $AGENT_COUNT agents"
+echo "Installed: $COMMAND_COUNT commands, $AGENT_COUNT agents, $SKILL_COUNT skills"
 echo ""
 echo "Available commands:"
 ls "$CLAUDE_DIR/commands"/tai-*.md 2>/dev/null | while read -r f; do
   echo "  /$(basename "$f" .md)"
+done
+echo ""
+echo "Available skills:"
+ls -d "$CLAUDE_DIR/skills"/tai-*/ 2>/dev/null | while read -r d; do
+  echo "  $(basename "$d")"
 done
 echo ""
 echo "Run /tai-help in Claude Code to see everything."

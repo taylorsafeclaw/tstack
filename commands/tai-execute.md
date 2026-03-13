@@ -1,15 +1,34 @@
 ---
 name: tai-execute
 description: Execute a feature plan with Agent Team coordination. Reads plan.md, spawns agents, commits atomically, updates plan progress.
-argument-hint: "[plan file path — defaults to .tai/features/<current>/plan.md]"
+argument-hint: "[plan file path — defaults to .tai/features/<current>/plan.md or plan.md]"
 model: sonnet
 ---
 
 You are the tai execution engine. Run a feature plan from start to finish.
 
+## Bootstrap
+
+Read these files first:
+- `CLAUDE.md` (project root)
+- `.claude/CLAUDE.md` (if exists)
+- `package.json` — project scripts
+
 ## Input
 
-Plan file: $ARGUMENTS (or `.tai/features/<currentFeature>/plan.md` from state.json)
+Plan file: $ARGUMENTS
+
+If no argument provided, search in order:
+1. `.tai/state.json` → `.tai/features/<currentFeature>/plan.md`
+2. `plan.md` in project root
+
+## Step transitions
+
+Before advancing to the next step:
+1. Verify the previous step completed successfully
+2. Collect the output needed by the next step
+3. If the previous step failed, enter error recovery
+4. Log the transition: "Step N complete → advancing to Step N+1"
 
 ## Step 1 — Read plan
 
@@ -19,49 +38,65 @@ Read the plan file. Extract:
 - Files to touch
 - Dependencies between tasks
 
-## Step 2 — Agent Team
+## Step 2 — Agent coordination
 
-For multi-domain plans:
+**Check for domain agents:**
+Use Glob to check: `.claude/agents/tai-convex.md`, `.claude/agents/tai-ui.md`
 
-```
-TeamCreate("<feature-name>")
-  ├── [tai-convex] backend tasks — run first
-  │     Mark tasks complete in plan.md as they finish
-  │     Commit atomically per logical chunk
-  └── [tai-ui] frontend tasks — unblocked after backend
-        Receives API shape from backend
-        Marks tasks complete in plan.md
-        Commits atomically per logical chunk
-```
+**Path A — Domain agents available:**
 
-For single-domain: spawn one agent, same atomic commit pattern.
+For each domain in the plan (backend first, then frontend):
 
-Pass to each agent:
-- Their specific tasks from the plan
-- Relevant files and patterns
-- API shape / contracts from other agents
+1. **Spawn backend agent** (if backend tasks exist):
+   - **Agent tool** with name "tai-convex"
+   - **prompt:** Include:
+     - Their specific tasks from the plan
+     - Files they own (no overlap with frontend)
+     - Patterns to follow (from context)
+     - "Commit atomically per logical chunk. Return: what was implemented, files modified, API shape { mutationName: { args, returns } }"
+
+2. **Report progress:** "Backend complete → advancing to frontend"
+
+3. **Spawn frontend agent** (if frontend tasks exist):
+   - **Agent tool** with name "tai-ui"
+   - **prompt:** Include:
+     - Their specific tasks from the plan
+     - API shape from backend agent (exact function names, args, return types)
+     - Files they own
+     - "Import from `convex/_generated/api`. Commit atomically per logical chunk."
+
+4. **Report progress:** "Frontend complete → running quality pipeline"
+
+**Path B — No domain agents (fallback):**
+
+1. Check for tai-implementer: `~/.claude/agents/tai-implementer.md`
+2. If available: spawn with full plan context
+3. If not: implement directly in main context, following existing patterns
 
 ## Step 3 — Mark progress
 
-After each agent finishes its chunk, update the plan file:
+After each agent finishes, update the plan file:
 ```markdown
 - [x] Task 1 (done)
 - [x] Task 2 (done)
 - [ ] Task 3 (pending)
 ```
 
-## Step 4 — Quality pipeline
+## Step 4 — Quality gate
 
-After all agents complete:
-```bash
-pnpm lint
-pnpm build
-pnpm test
-```
+Run in order. Stop on first failure.
+1. `pnpm lint` — if project has lint script
+2. `pnpm build` — if project has build script
+3. `pnpm test` — if project has test script
 
-Check for playwright tests if UI was touched.
+Detection: read `package.json` scripts to verify each exists before running.
+If a script doesn't exist, skip it.
 
-Stop on failure. Report the error. Suggest a fix but don't spiral.
+On failure:
+- Show exact error output (never summarize)
+- Attempt one targeted fix
+- Re-run the failed step only
+- If still failing: stop, report, ask user
 
 ## Step 5 — Report
 
@@ -70,13 +105,18 @@ Show:
 - Quality pipeline result (pass / fail with details)
 - What's next: `/tai-verify` or `/tai-next`
 
-## On failure
+## Error recovery
 
-If quality fails:
-1. Show exact error
-2. Suggest the fix
-3. Ask: "Should I attempt to fix this?"
-4. If yes: fix, re-run quality, report result
-5. If still failing: stop, report, let the user decide
+At each step, if failure occurs:
+1. Log what failed — exact error, which step, which file
+2. Save progress — mark completed tasks in plan.md
+3. Attempt fix — one attempt only
+4. Re-run from failure point — not from the beginning
+5. If still failing — stop, report error + progress + suggested fix, ask user
+6. Never loop more than twice on the same error
+7. Never proceed past a failed quality gate
 
-Do not loop more than twice on failures.
+If an agent fails mid-execution:
+- Save progress to plan.md (mark completed tasks)
+- Report which agent failed and at which task
+- Suggest: "Resume with `/tai-execute` — it will pick up from the last incomplete task"
