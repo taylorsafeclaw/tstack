@@ -1,0 +1,19 @@
+# Personal add-ons — not tracked in the public repo
+extensions/
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V7
+.Trashes
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local state
+.env
+*.local

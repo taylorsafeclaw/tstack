@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# tai setup — symlinks commands + agents to ~/.claude/
+set -euo pipefail
+
+TAI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CLAUDE_DIR="$HOME/.claude"
+
+# Ensure target directories exist
+mkdir -p "$CLAUDE_DIR/commands" "$CLAUDE_DIR/agents"
+
+echo "tai setup — installing from $TAI_DIR"
+echo ""
+
+# Symlink commands
+COMMAND_COUNT=0
+for src in "$TAI_DIR/commands"/tai-*.md; do
+  [ -f "$src" ] || continue
+  filename="$(basename "$src")"
+  dst="$CLAUDE_DIR/commands/$filename"
+  if [ -L "$dst" ]; then
+    rm "$dst"
+  elif [ -f "$dst" ]; then
+    echo "  SKIP $filename (non-symlink file exists at $dst — remove manually)"
+    continue
+  fi
+  ln -s "$src" "$dst"
+  echo "  ✓ commands/$filename"
+  COMMAND_COUNT=$((COMMAND_COUNT + 1))
+done
+
+# Symlink agents
+AGENT_COUNT=0
+for src in "$TAI_DIR/agents"/tai-*.md; do
+  [ -f "$src" ] || continue
+  filename="$(basename "$src")"
+  dst="$CLAUDE_DIR/agents/$filename"
+  if [ -L "$dst" ]; then
+    rm "$dst"
+  elif [ -f "$dst" ]; then
+    echo "  SKIP $filename (non-symlink file exists at $dst — remove manually)"
+    continue
+  fi
+  ln -s "$src" "$dst"
+  echo "  ✓ agents/$filename"
+  AGENT_COUNT=$((AGENT_COUNT + 1))
+done
+
+echo ""
+echo "Installed: $COMMAND_COUNT commands, $AGENT_COUNT agents"
+echo ""
+echo "Available commands:"
+ls "$CLAUDE_DIR/commands"/tai-*.md 2>/dev/null | while read -r f; do
+  echo "  /$(basename "$f" .md)"
+done
+echo ""
+echo "Run /tai-help in Claude Code to see everything."

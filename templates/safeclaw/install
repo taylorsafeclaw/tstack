@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# tai SafeClaw template install
+# Copies SafeClaw-specific agents and commands into the project's .claude/ directory.
+# These override global tai commands when they share a name.
+set -euo pipefail
+
+TEMPLATE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Find project root (directory containing .claude/)
+PROJECT_DIR="$(pwd)"
+if [ ! -d "$PROJECT_DIR/.claude" ]; then
+  # Try to find it by walking up
+  SEARCH_DIR="$PROJECT_DIR"
+  while [ "$SEARCH_DIR" != "/" ]; do
+    if [ -d "$SEARCH_DIR/.claude" ]; then
+      PROJECT_DIR="$SEARCH_DIR"
+      break
+    fi
+    SEARCH_DIR="$(dirname "$SEARCH_DIR")"
+  done
+fi
+
+if [ ! -d "$PROJECT_DIR/.claude" ]; then
+  echo "Error: could not find .claude/ directory. Run this from your project root."
+  exit 1
+fi
+
+echo "tai SafeClaw template — installing to $PROJECT_DIR/.claude/"
+echo ""
+
+# Ensure target directories exist
+mkdir -p "$PROJECT_DIR/.claude/agents" "$PROJECT_DIR/.claude/commands"
+
+# Copy agents
+AGENT_COUNT=0
+for src in "$TEMPLATE_DIR/agents"/tai-*.md; do
+  [ -f "$src" ] || continue
+  filename="$(basename "$src")"
+  dst="$PROJECT_DIR/.claude/agents/$filename"
+  cp "$src" "$dst"
+  echo "  ✓ agents/$filename"
+  AGENT_COUNT=$((AGENT_COUNT + 1))
+done
+
+# Copy commands
+COMMAND_COUNT=0
+for src in "$TEMPLATE_DIR/commands"/tai-*.md; do
+  [ -f "$src" ] || continue
+  filename="$(basename "$src")"
+  dst="$PROJECT_DIR/.claude/commands/$filename"
+  cp "$src" "$dst"
+  echo "  ✓ commands/$filename"
+  COMMAND_COUNT=$((COMMAND_COUNT + 1))
+done
+
+echo ""
+echo "Installed: $AGENT_COUNT agents, $COMMAND_COUNT commands"
+echo ""
+echo "Project agents (override global):"
+ls "$PROJECT_DIR/.claude/agents"/tai-*.md 2>/dev/null | while read -r f; do
+  echo "  $(basename "$f" .md)"
+done
+echo ""
+echo "Run /tai-help in Claude Code to see everything."

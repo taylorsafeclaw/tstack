@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# tai uninstall — removes all tai symlinks from ~/.claude/
+set -euo pipefail
+
+CLAUDE_DIR="$HOME/.claude"
+
+echo "tai uninstall — removing symlinks from $CLAUDE_DIR"
+echo ""
+
+REMOVED=0
+for dir in commands agents; do
+  for link in "$CLAUDE_DIR/$dir"/tai-*.md; do
+    [ -L "$link" ] || continue
+    rm "$link"
+    echo "  ✗ $dir/$(basename "$link")"
+    REMOVED=$((REMOVED + 1))
+  done
+done
+
+echo ""
+echo "Removed $REMOVED symlinks."
+echo "Project-level .claude/ files are untouched."
