@@ -1,41 +1,79 @@
 # Agent Teams
 
-Agent Teams coordinate multiple domain agents on a single feature, working in vertical slices. Backend finishes first and hands its API shape to the frontend agent.
+Agent Teams coordinate multiple domain agents on a single feature. Backend finishes first and hands its API shape to the frontend agent.
 
-## How it works
+## Dual-path coordination
+
+Commands that need multi-agent coordination use a **dual-path pattern** — checking for available agents before deciding the execution strategy.
+
+### Path A — Domain agents available
 
 ```
-Orchestrator (main context, opus)
+Orchestrator (main context)
   │
-  ├── Gathers context, creates plan
+  ├── Glob check: .claude/agents/tai-convex.md ✓
+  ├── Glob check: .claude/agents/tai-ui.md ✓
   │
-  ├── TeamCreate("pause-resume")
-  │
-  ├── Spawns tai-convex ──────────────────────────────────┐
-  │     Input: full task context, files to touch           │
-  │     tai-convex: reads schema, validators, auth, crypto │
-  │     tai-convex: writes mutations + queries             │
-  │     tai-convex: runs lint + build + test               │
-  │     tai-convex: commits atomically                     │
-  │     Returns: API shape ─────────────────────────────── ┤
-  │                                                        │
-  ├── (orchestrator receives API shape)                    │
-  │                                                        │
-  ├── Spawns tai-ui ────────────────────────────────────── ┘
-  │     Input: task context + API shape from backend
-  │     tai-ui: reads workspace-shell, globals.css, patterns
-  │     tai-ui: invokes /frontend-design first
-  │     tai-ui: builds components + hooks
-  │     tai-ui: runs lint + build
+  ├── Agent tool: spawn tai-convex ─────────────────────────┐
+  │     prompt: backend tasks, files to modify, patterns     │
+  │     tai-convex: reads schema, validators, auth, crypto   │
+  │     tai-convex: writes mutations + queries               │
+  │     tai-convex: runs pnpm build + pnpm test              │
+  │     tai-convex: commits atomically                       │
+  │     Returns: API shape ──────────────────────────────── ┤
+  │       { pauseWorkspace: { args: {id}, returns: null } }  │
+  │                                                          │
+  ├── (orchestrator extracts API shape)                      │
+  │                                                          │
+  ├── Agent tool: spawn tai-ui ───────────────────────────── ┘
+  │     prompt: UI tasks + API shape from backend
+  │     tai-ui: reads globals.css, workspace-shell, patterns
+  │     tai-ui: builds components using exact API shape
+  │     tai-ui: runs pnpm build
   │     tai-ui: commits atomically
   │
-  └── Spawns tai-validate ← full quality pipeline
+  └── Quality gate in main context
         pnpm lint + build + test (+ playwright if configured)
 ```
 
+### Path B — No domain agents (fallback)
+
+```
+Orchestrator
+  │
+  ├── Glob check: .claude/agents/tai-convex.md ✗
+  ├── Glob check: ~/.claude/agents/tai-implementer.md ✓
+  │
+  └── Agent tool: spawn tai-implementer
+        prompt: full task context, all files, patterns
+        Implements everything, runs quality, commits
+```
+
+### Path C — No agents at all
+
+Implement directly in main context. Same patterns, same quality gate.
+
+## Agent spawning — concrete invocations
+
+Commands use the Agent tool with specific parameters:
+
+```
+Agent tool:
+  name: "tai-convex"
+  prompt: "Implement these backend tasks:
+    1. Add pause mutation to convex/workspaces/mutations.ts
+    2. Add resume mutation
+    3. Update status query
+    Files to modify: convex/workspaces/mutations.ts, convex/workspaces/queries.ts
+    Pattern to follow: existing updateWorkspace mutation at mutations.ts:45
+    Commit atomically. Return: what was implemented, files modified, API shape."
+```
+
+**Key:** Prompts include specific tasks, specific files, specific patterns to follow, and what to return.
+
 ## Task board
 
-Tasks are defined in `plan.md` with domain assignments and dependency markers:
+Tasks are defined in `plan.md` with domain assignments:
 
 ```markdown
 ## Tasks
@@ -50,15 +88,13 @@ Tasks are defined in `plan.md` with domain assignments and dependency markers:
 - [ ] Status indicator updates (blocked by backend)
 - [ ] Wire to Convex mutations
 
-### Quality (tai-validate)
+### Quality
 - [ ] Full pipeline: lint + build + test (blocked by frontend)
 ```
 
-The orchestrator passes context and unblocks tasks as dependencies complete.
-
 ## API shape handoff
 
-After the backend agent finishes, the orchestrator explicitly extracts and passes the API surface to the frontend agent:
+The orchestrator explicitly extracts and passes the API surface:
 
 ```
 Backend returned:
@@ -78,21 +114,19 @@ feat(convex): add pause/resume mutations and status query
 feat(workspace): add pause/resume UI controls
 ```
 
-The final PR rolls up these commits. No giant "feat: add pause/resume" that touches 15 files.
+## When NOT to use multi-agent coordination
 
-## Single-domain features
-
-If a feature only touches one domain (e.g., pure backend migration, pure UI change), no Agent Team is created. One agent runs the full implementation. Same atomic commit pattern.
-
-## Fallback without Agent Teams
-
-If `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is not set, the orchestrator falls back to sequential agent spawning — runs backend agent, waits for it to finish, passes API shape manually, runs frontend agent. Same pipeline, same commits, just sequential rather than concurrent.
-
-## When NOT to use Agent Teams
-
-- Tasks (tier 1) — always single agent, too small to coordinate
+- Tasks (tier 1) — always single agent or direct, too small to coordinate
 - Pure-backend features — single `tai-convex` call
 - Pure-frontend features — single `tai-ui` call
 - Config/script changes — handled in main context
 
 Teams are for features that genuinely cross the backend/frontend boundary.
+
+## Error recovery in agent coordination
+
+If an agent fails mid-execution:
+1. Save progress to plan.md (mark completed tasks with `[x]`)
+2. Report which agent failed, at which task, with the exact error
+3. Suggest: "Resume with `/tai-execute` — it will pick up from the last incomplete task"
+4. Never retry the whole pipeline automatically

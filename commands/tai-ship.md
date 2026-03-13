@@ -46,6 +46,9 @@ git push -u origin <branch>
 
 ## Step 5 — Create PR
 
+If the `tai-pr-body` skill is available, invoke it to generate the PR description.
+Otherwise, generate the PR body manually:
+
 ```bash
 gh pr create --title "<title>" --body "$(cat <<'EOF'
 ## Summary

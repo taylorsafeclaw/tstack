@@ -29,7 +29,7 @@ echo "tai SafeClaw template — installing to $PROJECT_DIR/.claude/"
 echo ""
 
 # Ensure target directories exist
-mkdir -p "$PROJECT_DIR/.claude/agents" "$PROJECT_DIR/.claude/commands"
+mkdir -p "$PROJECT_DIR/.claude/agents" "$PROJECT_DIR/.claude/commands" "$PROJECT_DIR/.claude/skills"
 
 # Copy agents
 AGENT_COUNT=0
@@ -53,8 +53,23 @@ for src in "$TEMPLATE_DIR/commands"/tai-*.md; do
   COMMAND_COUNT=$((COMMAND_COUNT + 1))
 done
 
+# Copy skills
+SKILL_COUNT=0
+for src in "$TEMPLATE_DIR/skills"/tai-*/; do
+  [ -d "$src" ] || continue
+  dirname="$(basename "$src")"
+  dst="$PROJECT_DIR/.claude/skills/$dirname"
+  mkdir -p "$dst"
+  for skillfile in "$src"*; do
+    [ -f "$skillfile" ] || continue
+    cp "$skillfile" "$dst/"
+  done
+  echo "  ✓ skills/$dirname"
+  SKILL_COUNT=$((SKILL_COUNT + 1))
+done
+
 echo ""
-echo "Installed: $AGENT_COUNT agents, $COMMAND_COUNT commands"
+echo "Installed: $AGENT_COUNT agents, $COMMAND_COUNT commands, $SKILL_COUNT skills"
 echo ""
 echo "Project agents (override global):"
 ls "$PROJECT_DIR/.claude/agents"/tai-*.md 2>/dev/null | while read -r f; do

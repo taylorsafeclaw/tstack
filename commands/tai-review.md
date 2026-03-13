@@ -18,13 +18,19 @@ Based on input:
 - `branch`: `git diff main...HEAD`
 - File path: read that specific file
 
-## Step 2 — Read conventions
+## Step 2 — Check for project-specific reviewer
+
+Use Glob to check: `.claude/agents/tai-reviewer.md`
+
+If a project-specific reviewer exists, spawn it with the diff scope instead of running the generic review below. The project reviewer knows domain-specific conventions.
+
+## Step 3 — Read conventions
 
 Read CLAUDE.md (project root + `.claude/CLAUDE.md`) to understand:
 - Project-specific patterns
 - What counts as a violation here
 
-## Step 3 — Review
+## Step 4 — Review
 
 Check for:
 
@@ -43,12 +49,16 @@ Check for:
 **Convention violations**
 - Pattern mismatch with surrounding code
 - New abstractions where existing ones should be reused
-- Missing required patterns (e.g., auth check in Convex mutation)
+- Missing required patterns (e.g., auth check in mutation)
 
 **What NOT to flag**
 - Style preferences (tabs vs spaces, etc.)
 - Overly defensive validation for internal code
 - Things that are fine by project standards
+
+## Step 5 — Security audit (if available)
+
+If the `tai-audit` skill is available, invoke it for a deeper security-focused review of the changed code. Merge its findings with your review output.
 
 ## Output
 
@@ -59,13 +69,13 @@ Only report issues you're confident about. Skip nitpicks.
 
 ### Issues
 
-**[SECURITY]** convex/foo.ts:42
-User input passed directly to exec without sanitization.
-Fix: sanitize input with allowlist before exec.
+**[SECURITY]** path/file.ts:42
+Description of the issue.
+Fix: specific recommendation.
 
-**[LOGIC]** components/bar.tsx:17
-Missing error boundary — if API call fails, component crashes silently.
-Fix: handle error state in the fetch.
+**[LOGIC]** path/file.tsx:17
+Description of the issue.
+Fix: specific recommendation.
 
 ### No issues
 [if nothing found] No significant issues found.

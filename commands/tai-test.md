@@ -22,7 +22,13 @@ Before running, detect what's available:
 
 **Dogfood:**
 - Does `.claude/dogfood.json` exist?
-- Does it have a target URL and auth configured?
+- Is the `tai-dogfood` skill available?
+
+## Test generation (optional)
+
+If the `tai-test-gen` skill is available and the changed files lack test coverage:
+- Invoke `tai-test-gen` to generate missing tests before running
+- This is especially useful for new features
 
 ## Mode: playwright (or auto-detected)
 
@@ -37,18 +43,13 @@ npx playwright test --grep "<component-name>"
 
 Report: total tests, passed, failed, any failures with trace link.
 
-## Mode: dogfood (or --dogfood flag)
+## Mode: dogfood
 
-Invoke the `/dogfood` skill.
+Invoke the `tai-dogfood` skill for browser QA testing.
 
-Uses credentials from `.claude/dogfood.json` or memory:
-- Email: `dogfood+clerk_test@safeclaw.tech`
-- Password: standard QA password
-- OTP: `424242` (Clerk test mode)
+Credentials come from `.claude/dogfood.json` — **never hardcode credentials**.
 
-Run in headed mode. Walk through the affected user flow.
-
-Report: what was tested, any issues found.
+If `.claude/dogfood.json` doesn't exist, ask the user for the target URL and credentials.
 
 ## Mode: all
 
@@ -71,6 +72,6 @@ Smart detect and run what's available:
 ✗ 1 test failed: workspace-card.spec.ts:42
 
 ### Dogfood
-[if run] Tested: workspace pause/resume flow
+[if run] Tested: <flow name>
 Issues found: none / [list issues]
 ```

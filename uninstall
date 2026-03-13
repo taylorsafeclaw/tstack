@@ -17,6 +17,15 @@ for dir in commands agents; do
   done
 done
 
+# Remove skill symlinks (directory-level)
+for link in "$CLAUDE_DIR/skills"/tai-*/; do
+  linkpath="${link%/}"
+  [ -L "$linkpath" ] || continue
+  rm "$linkpath"
+  echo "  ✗ skills/$(basename "$linkpath")"
+  REMOVED=$((REMOVED + 1))
+done
+
 echo ""
 echo "Removed $REMOVED symlinks."
 echo "Project-level .claude/ files are untouched."

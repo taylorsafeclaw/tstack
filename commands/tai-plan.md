@@ -21,7 +21,9 @@ First, assess the scope:
 - Ask: "Ready to implement?"
 
 **Large (>3 files or multiple domains):**
-- Write `plan.md` in the project root
+- Determine plan location:
+  1. Check `.tai/state.json` — if mission active, write to `.tai/features/<currentFeature>/plan.md`
+  2. Otherwise: write `plan.md` in project root
 - Use the structured format below
 - Ask: "Does this plan look right? Any changes?"
 
@@ -43,17 +45,24 @@ One sentence describing what success looks like.
 - [ ] Task 3 (blocked by backend tasks)
 - [ ] Task 4
 
-### Quality (tai-validate)
+### Quality
 - [ ] Full lint + build + test pipeline
 
 ## API shape
-What mutations/queries will the backend expose for the frontend to use:
+What mutations/queries will the backend expose:
 - `api.thing.doX({ id })` → returns `{ ... }`
 
 ## Files affected
 - `convex/foo.ts` — add mutation
 - `components/foo.tsx` — new component
 ```
+
+## Context window sizing
+
+Size each agent's workload to fit comfortably in ~50% of a fresh context window:
+- Each task chunk should be self-contained — an agent spawned with just the plan + CLAUDE.md should be able to execute it
+- If a domain has more than 5-7 tasks, split into multiple chunks with clear boundaries
+- Include file paths and patterns in each chunk so agents don't need to search
 
 ## Confirm step
 
@@ -65,6 +74,6 @@ Do NOT start implementing until the user confirms.
 
 ## After confirmation
 
-If the user confirms, say: "Starting implementation. Run `/tai-implement plan.md` or I'll proceed now."
+If the user confirms, say: "Starting implementation. Run `/tai-execute` or I'll proceed now."
 
 If they request changes, update the plan and ask again.

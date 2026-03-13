@@ -1,21 +1,24 @@
 # CLAUDE.md — tai Framework
 
-This is the tai dev framework repository. tai is a lightweight, installable workflow for Claude Code — three work tiers, opinionated quality pipeline, plug-and-play agents.
+This is the tai dev framework repository. tai is a lightweight, installable workflow for Claude Code — three work tiers, opinionated quality pipeline, plug-and-play agents and skills.
 
 ## Repo structure
 
 ```
 tai/
 ├── commands/           ← slash commands → ~/.claude/commands/tai-*.md
-├── agents/             ← subagents → ~/.claude/agents/tai-*.md (currently empty)
+├── agents/             ← subagents → ~/.claude/agents/tai-*.md
+├── skills/             ← skills → ~/.claude/skills/tai-*/SKILL.md
+├── hooks/              ← hook scripts (quality gate, branch guard, etc.)
 ├── templates/          ← project-specific extensions
 │   └── safeclaw/       ← SafeClaw project template
-│       ├── install     ← copies agents + commands to project .claude/
+│       ├── install     ← copies agents + commands + skills to project .claude/
 │       ├── agents/     ← tai-convex, tai-ui, tai-validate, tai-reviewer
-│       └── commands/   ← tai-schema-change
+│       ├── commands/   ← tai-schema-change
+│       └── skills/     ← tai-convex-patterns
 ├── extensions/         ← personal add-ons (gitignored, not in repo)
 ├── docs/               ← full documentation
-├── setup               ← symlinks commands + agents to ~/.claude/
+├── setup               ← symlinks commands + agents + skills to ~/.claude/
 ├── uninstall           ← removes all symlinks
 ├── VERSION             ← semver
 └── CLAUDE.md           ← this file
@@ -24,17 +27,18 @@ tai/
 ## Install / uninstall
 
 ```bash
-./setup      # symlinks commands + agents to ~/.claude/
+./setup      # symlinks commands + agents + skills to ~/.claude/
 ./uninstall  # removes all symlinks
 ```
 
-`setup` is idempotent — safe to re-run after adding commands.
+`setup` is idempotent — safe to re-run after adding commands, agents, or skills.
 
 ## Conventions
 
 - All tai files are prefixed `tai-` — prevents collisions with other frameworks (`gsd-*`, `gstack-*`)
 - Commands: `commands/tai-*.md` with frontmatter (`name`, `description`, `argument-hint`, `model`)
-- Agents: `agents/tai-*.md` with frontmatter (`name`, `description`, `model`)
+- Agents: `agents/tai-*.md` with frontmatter (`name`, `description`, `model`, `tools`, `maxTurns`)
+- Skills: `skills/tai-*/SKILL.md` with frontmatter (`name`, `description`, `user-invocable`)
 - Project templates: `templates/<project>/` with an `install` script
 
 ## Adding a new command
@@ -69,6 +73,33 @@ model: sonnet | opus | haiku
 # 2. Run ./setup to refresh symlinks
 ```
 
+Agent frontmatter:
+```yaml
+---
+name: tai-<name>
+description: <one-line description>
+model: sonnet | opus | haiku
+tools: Read, Grep, Glob, Edit, Write, Bash
+maxTurns: 30
+---
+```
+
+## Adding a new skill
+
+```bash
+# 1. Create skills/tai-<name>/SKILL.md with frontmatter
+# 2. Run ./setup to refresh symlinks
+```
+
+Skill frontmatter:
+```yaml
+---
+name: tai-<name>
+description: <one-line description>
+user-invocable: true | false
+---
+```
+
 ## The three tiers
 
 | Tier | Command | Scope | Model |
@@ -81,7 +112,7 @@ model: sonnet | opus | haiku
 
 - **opus** — thinking: context (`/tai-context`), planning (`/tai-plan`), missions, scoping, debugging
 - **sonnet** — building: implementation (`/tai-task`, `/tai-execute`), review, refactoring, committing
-- **haiku** — running: validation (`/tai-validate`), verification (`/tai-verify`), status, help
+- **haiku** — running: validation (`/tai-validate`), status, help
 
 ## Quality pipeline
 
@@ -93,17 +124,19 @@ Stop on first failure. Never commit broken code.
 
 ## Extension system
 
-Commands and agents can live in three places (highest → lowest priority):
-1. `<project>/.claude/commands|agents/tai-*.md` — project-specific
+Commands, agents, and skills can live in three places (highest → lowest priority):
+1. `<project>/.claude/commands|agents|skills/tai-*.md` — project-specific
 2. `~/Development/tai/extensions/tai-*.md` — personal add-ons (gitignored)
-3. `~/Development/tai/commands|agents/tai-*.md` — core (this repo)
+3. `~/Development/tai/commands|agents|skills/tai-*.md` — core (this repo)
 
 ## Documentation
 
 Full docs in `docs/`:
 - `docs/tiers.md` — tier breakdown and decision guide
-- `docs/commands.md` — all 23 commands with args, model, behavior
-- `docs/agents.md` — agents reference + SafeClaw template agents
+- `docs/commands.md` — all commands with args, model, behavior
+- `docs/agents.md` — agents reference (global + SafeClaw template agents)
+- `docs/skills.md` — skills system and all available skills
+- `docs/hooks.md` — hook scripts and configuration
 - `docs/quality-pipeline.md` — pipeline details and failure behavior
 - `docs/missions.md` — state format, ROADMAP.md, feature loop
 - `docs/agent-teams.md` — Agent Team coordination model

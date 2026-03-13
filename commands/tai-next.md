@@ -13,12 +13,33 @@ Read `.tai/state.json` and `.tai/ROADMAP.md`.
 
 Identify current feature number and its goal.
 
-## Step 2 — Verify
+## Step 2 — Verify (inlined)
 
-Run `/tai-verify` on the current feature (internally — don't ask the user to do it).
+Run verification directly — do not invoke `/tai-verify` as a separate command.
 
-If verification **fails**:
-- Show what's missing
+### 2a. Check success criteria
+
+Read the current feature's success criteria from `.tai/ROADMAP.md`.
+
+For each criterion:
+- **Code existence:** Use Glob/Grep to verify the file/function/component exists
+- **Behavior wiring:** Read the code to verify mutations are called, UI renders the right state
+- Report pass/fail per criterion
+
+### 2b. Quality pipeline
+
+Run in order. Stop on first failure.
+1. `pnpm lint` — if project has lint script
+2. `pnpm build` — if project has build script
+3. `pnpm test` — if project has test script
+
+Detection: read `package.json` scripts to verify each exists before running.
+If a script doesn't exist, skip it.
+
+### 2c. Verification result
+
+If any criterion fails OR quality pipeline fails:
+- Show what's missing/failing
 - Say: "Feature <N> is not complete. Fix the issues above, then run `/tai-next` again."
 - Stop here.
 
@@ -26,13 +47,29 @@ If verification **fails**:
 
 ```bash
 git push -u origin feat/<slug>
-gh pr create --title "feat(<scope>): <feature name>" --body "..."
 ```
 
-PR body:
-- What this feature implements
-- Success criteria (from ROADMAP.md)
-- Test plan
+Create PR with rich description:
+```bash
+gh pr create --title "feat(<scope>): <feature name>" --body "$(cat <<'EOF'
+## Summary
+<what this feature implements>
+
+## Success criteria
+<from ROADMAP.md — checked off>
+
+## Test plan
+- [ ] Quality pipeline passes
+- [ ] <specific verification items>
+EOF
+)"
+```
+
+**Error recovery for PR creation:**
+If PR creation fails (no remote, auth issues, branch not pushed):
+1. Show the exact error
+2. Suggest manual steps: "Push with `git push -u origin <branch>`, then create PR manually or re-run `/tai-next`"
+3. Do NOT update state.json — feature is not advanced until PR exists
 
 Return the PR URL.
 
@@ -59,7 +96,7 @@ Update `.tai/state.json`:
 
 If there is a next feature:
 ```
-✓ Feature <N> complete → PR #<number>
+Feature <N> complete → PR #<number>
 
 Next: Feature <N+1> — <name>
 Goal: <goal>
@@ -70,9 +107,9 @@ Or run /tai-execute if you already have a plan.
 
 If no next feature (mission complete):
 ```
-✓ Feature <N> complete → PR #<number>
+Feature <N> complete → PR #<number>
 
-🎉 Mission complete! All features shipped.
+Mission complete! All features shipped.
 Run /tai-status to see the full summary.
 ```
 
@@ -81,3 +118,4 @@ Run /tai-status to see the full summary.
 - Never advance if verify fails
 - Always open a PR before advancing
 - State update is the source of truth — keep it accurate
+- If PR creation fails, do NOT advance the mission state
