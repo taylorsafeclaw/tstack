@@ -8,7 +8,7 @@
  *   "hooks": {
  *     "PreToolUse": [{
  *       "matcher": "Bash",
- *       "command": "node ~/Development/tai/hooks/tai-branch-guard.js"
+ *       "command": "node ~/tai/hooks/tai-branch-guard.js"
  *     }]
  *   }
  * }

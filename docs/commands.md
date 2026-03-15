@@ -1,6 +1,6 @@
 # Command Reference
 
-All commands are available after running `~/Development/tai/setup`. Invoke them with `/tai-<name>` in Claude Code.
+All commands are available after running `~/tai/setup`. Invoke them with `/tai-<name>` in Claude Code.
 
 ---
 

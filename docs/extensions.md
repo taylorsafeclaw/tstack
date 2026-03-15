@@ -8,27 +8,27 @@ tai is extended by dropping `tai-*.md` files in specific directories. No registr
 <project>/.claude/agents/tai-*.md       ← highest (project override)
 <project>/.claude/commands/tai-*.md
     ↓
-~/Development/tai/extensions/           ← personal add-ons (gitignored)
+~/tai/extensions/                       ← personal add-ons (gitignored)
     ↓
-~/Development/tai/agents/               ← core global agents
-~/Development/tai/commands/             ← core global commands (lowest)
+~/tai/agents/                           ← core global agents
+~/tai/commands/                         ← core global commands (lowest)
 ```
 
-A project-level `tai-convex.md` overrides the global one. This is how the SafeClaw template works — it installs project-specific agents that know about SafeClaw's schema, auth patterns, and conventions.
+A project-level `tai-<name>.md` overrides the global one. This is how project templates work — they install project-specific agents that know about your schema, auth patterns, and conventions.
 
 ## Adding a command
 
 **Global (available in all projects):**
 ```bash
-cp my-command.md ~/Development/tai/commands/tai-my-command.md
+cp my-command.md ~/tai/commands/tai-my-command.md
 # Re-run setup to refresh symlink:
-~/Development/tai/setup
+~/tai/setup
 ```
 
 **Personal add-on (global but not in git):**
 ```bash
-mkdir -p ~/Development/tai/extensions
-cp my-command.md ~/Development/tai/extensions/tai-my-command.md
+mkdir -p ~/tai/extensions
+cp my-command.md ~/tai/extensions/tai-my-command.md
 ```
 
 **Project-only:**
@@ -44,8 +44,8 @@ Same pattern:
 cp my-agent.md <project>/.claude/agents/tai-my-agent.md
 
 # Global:
-cp my-agent.md ~/Development/tai/agents/tai-my-agent.md
-~/Development/tai/setup
+cp my-agent.md ~/tai/agents/tai-my-agent.md
+~/tai/setup
 ```
 
 ## Naming convention
@@ -68,7 +68,7 @@ Use the built-in scaffolders instead of writing from scratch:
 For reusable project setups, create a template directory:
 
 ```
-~/Development/tai/templates/<project-name>/
+~/tai/templates/<project-name>/
 ├── install                 ← copies agents + commands to project .claude/
 ├── agents/
 │   └── tai-*.md
@@ -81,15 +81,15 @@ The `install` script should:
 2. `mkdir -p .claude/agents .claude/commands`
 3. Copy `tai-*.md` files
 
-See `templates/safeclaw/install` for a reference implementation.
+See `templates/example/install` for a reference implementation.
 
 ## Promotion path
 
 Agents start project-specific and are promoted to global when they prove useful across multiple projects:
 
-1. Identify what's SafeClaw-specific vs generic in the agent
+1. Identify what's project-specific vs generic in the agent
 2. Extract project-specific bootstrap/patterns into the project override
-3. Move the generic version to `~/Development/tai/agents/`
+3. Move the generic version to `~/tai/agents/`
 4. The project keeps its override — the global version is the fallback
 
-Example: `tai-validate` in the SafeClaw template knows SafeClaw's specific `pnpm` commands. A future generic version could detect the package manager and test runner automatically.
+Example: A project-specific `tai-validate` agent that knows your exact `pnpm` commands could be generalized to auto-detect the package manager and test runner, then promoted to global.

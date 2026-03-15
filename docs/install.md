@@ -10,13 +10,14 @@
 ## Install
 
 ```bash
-git clone https://github.com/taylorsafeclaw/tai.git ~/Development/tai && ~/Development/tai/setup
+git clone https://github.com/tai-framework/tai.git ~/tai && ~/tai/setup
 ```
 
 The `setup` script:
 1. Symlinks every `commands/tai-*.md` → `~/.claude/commands/`
-2. Symlinks every `agents/tai-*.md` → `~/.claude/agents/` (currently empty — agents live in project templates)
-3. Prints a summary of installed commands
+2. Symlinks every `agents/tai-*.md` → `~/.claude/agents/`
+3. Symlinks every `skills/tai-*/` → `~/.claude/skills/`
+4. Prints a summary of installed commands, agents, and skills
 
 After install, all `/tai-*` commands are available in every Claude Code session.
 
@@ -31,38 +32,63 @@ You should see 23 command symlinks.
 ## Uninstall
 
 ```bash
-~/Development/tai/uninstall
+~/tai/uninstall
 ```
 
-Removes all `~/.claude/commands/tai-*.md` and `~/.claude/agents/tai-*.md` symlinks. Does **not** touch any project-level `.claude/` files.
-
----
-
-## Project templates
-
-Templates install project-specific agents and commands into your project's `.claude/` directory. These override global tai commands when they share a name.
-
-### SafeClaw
-
-```bash
-~/Development/tai/templates/safeclaw/install
-```
-
-Installs to `<project>/.claude/`:
-- `agents/tai-convex.md` — Convex backend specialist
-- `agents/tai-ui.md` — Workspace UI specialist
-- `agents/tai-validate.md` — SafeClaw lint/build/test validator
-- `agents/tai-reviewer.md` — SafeClaw code reviewer
-- `commands/tai-schema-change.md` — Guided schema modification workflow
-
-The install script can be re-run safely — it overwrites existing files.
+Removes all `~/.claude/commands/tai-*.md`, `~/.claude/agents/tai-*.md`, and `~/.claude/skills/tai-*/` symlinks. Does **not** touch any project-level `.claude/` files.
 
 ---
 
 ## Update
 
 ```bash
-cd ~/Development/tai && git pull && ~/Development/tai/setup
+cd ~/tai && git pull && ~/tai/setup
 ```
 
 `setup` is idempotent — re-running it refreshes all symlinks.
+
+---
+
+## Project templates
+
+Templates install project-specific agents, commands, and skills into your project's `.claude/` directory. These override global tai commands when they share a name.
+
+### Using a template
+
+```bash
+~/tai/templates/<template-name>/install
+```
+
+### Creating a template
+
+Create a directory under `templates/` with an install script:
+
+```
+~/tai/templates/<my-project>/
+├── install                 ← copies agents + commands + skills to project .claude/
+├── agents/
+│   └── tai-*.md            ← project-specific agent overrides
+├── commands/
+│   └── tai-*.md            ← project-specific commands
+└── skills/
+    └── tai-*/
+        └── SKILL.md        ← project-specific skills
+```
+
+The `install` script should:
+1. Find the project root (directory with `.claude/`)
+2. `mkdir -p .claude/agents .claude/commands .claude/skills`
+3. Copy `tai-*.md` files and skill directories
+
+See `templates/example/install` for a reference implementation.
+
+---
+
+## Runtime directory
+
+Many tai commands write to `.tai/` in your project root:
+- `.tai/state.json` — mission progress state
+- `.tai/.quality-passed` — quality gate marker
+- `.tai/.agent-log` — agent coordination log
+
+Add `.tai/` to your project's `.gitignore`.

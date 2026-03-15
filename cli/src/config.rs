@@ -11,7 +11,7 @@ impl TaiConfig {
         let home_dir = dirs::home_dir().context("Could not determine home directory")?;
         let claude_dir = home_dir.join(".claude");
 
-        // TAI_ROOT: env var > parent of binary > ~/Development/tai
+        // TAI_ROOT: env var > parent of binary > ~/tai
         let tai_root = if let Ok(root) = std::env::var("TAI_ROOT") {
             PathBuf::from(root)
         } else {
@@ -21,14 +21,14 @@ impl TaiConfig {
                     .ok()
                     .and_then(|p| p.parent().map(|p| p.parent().map(|p| p.to_path_buf())).flatten()),
                 Some(std::env::current_dir().unwrap_or_default()),
-                Some(home_dir.join("Development/tai")),
+                Some(home_dir.join("tai")),
             ];
 
             candidates
                 .into_iter()
                 .flatten()
                 .find(|p| p.join("VERSION").exists())
-                .unwrap_or_else(|| home_dir.join("Development/tai"))
+                .unwrap_or_else(|| home_dir.join("tai"))
         };
 
         Ok(Self {

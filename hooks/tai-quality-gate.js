@@ -11,7 +11,7 @@
  *   "hooks": {
  *     "PreToolUse": [{
  *       "matcher": "Bash",
- *       "command": "node ~/Development/tai/hooks/tai-quality-gate.js"
+ *       "command": "node ~/tai/hooks/tai-quality-gate.js"
  *     }]
  *   }
  * }

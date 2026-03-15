@@ -65,7 +65,7 @@ Shows available project templates with content counts.
 
 ### `tai template install <name>`
 
-Runs a template's `install` script (e.g., `templates/safeclaw/install`).
+Runs a template's `install` script (e.g., `templates/example/install`).
 
 ### `tai version`
 
@@ -78,7 +78,7 @@ The CLI auto-detects the tai root directory by searching for a `VERSION` file:
 1. `TAI_ROOT` environment variable (if set)
 2. Parent of the binary's location
 3. Current working directory
-4. `~/Development/tai` (fallback)
+4. `~/tai` (fallback)
 
 The Claude home is always `~/.claude/`.
 

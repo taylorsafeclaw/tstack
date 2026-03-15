@@ -14,7 +14,7 @@ Agent name and purpose: $ARGUMENTS
 ## Step 1 — Clarify placement
 
 Ask (or infer from context):
-- **Global** (`~/Development/tai/agents/`) — general-purpose, useful in any project
+- **Global** (`~/tai/agents/`) — general-purpose, useful in any project
 - **Project** (`.claude/agents/`) — project-specific, uses project patterns
 
 If the agent references project-specific things (Convex, specific UI patterns), it's project-level.
@@ -85,8 +85,8 @@ Write to the appropriate directory. Confirm with user.
 
 ## Step 5 — Update setup (if global)
 
-If the agent goes in `~/Development/tai/agents/`, remind the user to run:
+If the agent goes in `~/tai/agents/`, remind the user to run:
 ```bash
-~/Development/tai/setup
+~/tai/setup
 ```
 to re-symlink it.

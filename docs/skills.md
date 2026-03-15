@@ -57,14 +57,9 @@ Generates rich PR descriptions from commits, plan files, and changed files. Call
 
 ---
 
-## SafeClaw project skills (1)
+## Project template skills
 
-### `tai-convex-patterns`
-**User-invocable:** no
-
-SafeClaw Convex backend patterns reference: auth, encryption, state machine, indexes, validators. Loaded by the tai-convex agent to keep its prompt lean.
-
-Installed by `~/Development/tai/templates/safeclaw/install`.
+Project templates can include skills in `<template>/skills/tai-<name>/SKILL.md`. These are installed into `<project>/.claude/skills/` by the template's install script.
 
 ---
 

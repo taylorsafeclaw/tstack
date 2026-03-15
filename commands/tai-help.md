@@ -74,4 +74,4 @@ tai v<version> — personal dev framework for Claude Code
 [list from ~/.claude/agents/tai-*.md — show name + description]
 ```
 
-Read the version from `~/Development/tai/VERSION` if it exists.
+Read the version from `~/tai/VERSION` if it exists.

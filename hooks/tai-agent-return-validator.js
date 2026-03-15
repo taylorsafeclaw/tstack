@@ -7,7 +7,7 @@
  * {
  *   "hooks": {
  *     "SubagentStop": [{
- *       "command": "node ~/Development/tai/hooks/tai-agent-return-validator.js"
+ *       "command": "node ~/tai/hooks/tai-agent-return-validator.js"
  *     }]
  *   }
  * }

@@ -42,6 +42,52 @@ pub enum Commands {
     },
     /// Print version and build info
     Version,
+
+    // ── Workflow shortcuts (invoke tai slash commands via claude CLI) ──────
+
+    /// Run any tai slash command via the claude CLI
+    Run {
+        /// Command name — e.g. task, feature, commit, ship, validate, debug
+        command: String,
+        /// Arguments forwarded to the slash command
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+        /// Non-interactive print mode (streams output, then exits)
+        #[arg(short, long)]
+        print: bool,
+    },
+    /// Quick atomic change → commit  [alias: tai run task]
+    Task {
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Full feature pipeline → PR  [alias: tai run feature]
+    Feature {
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Start a multi-feature mission  [alias: tai run mission]
+    Mission {
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Validate + commit  [alias: tai run commit]
+    Commit {
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Full pipeline + PR  [alias: tai run ship]
+    Ship {
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Lint + build + test  [alias: tai run validate]
+    Validate,
+    /// Debug + fix an error  [alias: tai run debug]
+    Debug {
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
 }
 
 #[derive(ValueEnum, Clone)]
@@ -64,7 +110,7 @@ pub enum AddKind {
 pub enum TemplateAction {
     /// Install a project template
     Install {
-        /// Template name (e.g., safeclaw)
+        /// Template name (e.g., example)
         name: String,
     },
     /// List available templates

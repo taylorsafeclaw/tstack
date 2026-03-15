@@ -14,11 +14,10 @@ tai/
 ├── skills/             ← skills → ~/.claude/skills/tai-*/SKILL.md
 ├── hooks/              ← hook scripts (quality gate, branch guard, etc.)
 ├── templates/          ← project-specific extensions
-│   └── safeclaw/       ← SafeClaw project template
+│   └── example/        ← minimal template stub (reference implementation)
 │       ├── install     ← copies agents + commands + skills to project .claude/
-│       ├── agents/     ← tai-convex, tai-ui, tai-validate, tai-reviewer
-│       ├── commands/   ← tai-schema-change
-│       └── skills/     ← tai-convex-patterns
+│       ├── agents/     ← example project-specific agent
+│       └── commands/   ← example project-specific command
 ├── extensions/         ← personal add-ons (gitignored, not in repo)
 ├── docs/               ← full documentation
 ├── setup               ← symlinks commands + agents + skills to ~/.claude/
@@ -145,8 +144,8 @@ Stop on first failure. Never commit broken code.
 
 Commands, agents, and skills can live in three places (highest → lowest priority):
 1. `<project>/.claude/commands|agents|skills/tai-*.md` — project-specific
-2. `~/Development/tai/extensions/tai-*.md` — personal add-ons (gitignored)
-3. `~/Development/tai/commands|agents|skills/tai-*.md` — core (this repo)
+2. `~/tai/extensions/tai-*.md` — personal add-ons (gitignored)
+3. `~/tai/commands|agents|skills/tai-*.md` — core (this repo)
 
 ## Documentation
 
@@ -154,7 +153,7 @@ Full docs in `docs/`:
 - `docs/cli.md` — Rust CLI reference (`tai`, `tai doctor`, etc.)
 - `docs/tiers.md` — tier breakdown and decision guide
 - `docs/commands.md` — all slash commands with args, model, behavior
-- `docs/agents.md` — agents reference (global + SafeClaw template agents)
+- `docs/agents.md` — agents reference (global + project template agents)
 - `docs/skills.md` — skills system and all available skills
 - `docs/hooks.md` — hook scripts and configuration
 - `docs/quality-pipeline.md` — pipeline details and failure behavior

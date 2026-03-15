@@ -1,14 +1,14 @@
 # tai
 
-A lightweight, installable dev framework for Claude Code. Three tiers, opinionated quality pipeline, plug-and-play agents.
+A lightweight, installable dev framework for Claude Code. Three tiers, opinionated quality pipeline, plug-and-play agents and skills.
 
 ## Install
 
 ```bash
-git clone https://github.com/taylorsafeclaw/tai.git ~/Development/tai && ~/Development/tai/setup
+git clone https://github.com/tai-framework/tai.git ~/tai && ~/tai/setup
 ```
 
-Symlinks all commands to `~/.claude/commands/`. No binaries, no dependencies — pure markdown.
+Symlinks all commands, agents, and skills to `~/.claude/`. No binaries, no dependencies — pure markdown.
 
 ## The three tiers
 
@@ -25,8 +25,8 @@ TIER 3: MISSION   → /tai-mission "build this system"  days, multiple features,
 | Fix bug, change color, rename | Task |
 | Add feature, build flow | Feature |
 | Build entire system | Mission |
-| 1-3 files | Task |
-| 3-10 files | Feature |
+| 1–3 files | Task |
+| 3–10 files | Feature |
 | 10+ files | Mission |
 
 ## Commands
@@ -83,19 +83,29 @@ Stop on first failure. Don't commit broken code.
 
 ## Project templates
 
-Install project-specific agents and commands:
+Install project-specific agents and commands into your project's `.claude/` directory:
 
 ```bash
-# SafeClaw
-~/Development/tai/templates/safeclaw/install
+~/tai/templates/example/install
 ```
 
-This copies SafeClaw agents (`tai-convex`, `tai-ui`, `tai-validate`, `tai-reviewer`) and the `tai-schema-change` command into your project's `.claude/`.
+See [docs/install.md](docs/install.md) for how to create your own templates.
+
+## Optional: CLI
+
+The `tai` CLI adds power tools (`tai doctor`, `tai list`, `tai add`). It's optional — the bash `./setup` script works without it.
+
+```bash
+# Build from source:
+cd ~/tai/cli && cargo install --path .
+
+# Or download a prebuilt binary from GitHub Releases
+```
 
 ## Uninstall
 
 ```bash
-~/Development/tai/uninstall
+~/tai/uninstall
 ```
 
 Removes all global symlinks. Does not touch project-level files.
@@ -103,8 +113,8 @@ Removes all global symlinks. Does not touch project-level files.
 ## Extension system
 
 Drop a `tai-*.md` file in any of these to extend tai:
-- `~/Development/tai/commands/` — core (in git)
-- `~/Development/tai/extensions/` — personal add-ons (gitignored)
+- `~/tai/commands/` — core (in git)
+- `~/tai/extensions/` — personal add-ons (gitignored)
 - `<project>/.claude/commands/tai-*.md` — project-only
 
 Project files take priority over global files. Use `/tai-new-command` or `/tai-new-agent` to scaffold new files.
@@ -112,10 +122,16 @@ Project files take priority over global files. Use `/tai-new-command` or `/tai-n
 ## Docs
 
 - [docs/tiers.md](docs/tiers.md) — tier breakdown and decision guide
-- [docs/commands.md](docs/commands.md) — all 23 commands with full reference
-- [docs/agents.md](docs/agents.md) — available agents + SafeClaw template
+- [docs/commands.md](docs/commands.md) — all commands with full reference
+- [docs/agents.md](docs/agents.md) — available agents
+- [docs/skills.md](docs/skills.md) — available skills
 - [docs/quality-pipeline.md](docs/quality-pipeline.md) — pipeline details
 - [docs/missions.md](docs/missions.md) — mission state, ROADMAP.md, state.json
 - [docs/agent-teams.md](docs/agent-teams.md) — Agent Team coordination model
 - [docs/extensions.md](docs/extensions.md) — extension system + priority
 - [docs/install.md](docs/install.md) — install, uninstall, templates
+- [docs/cli.md](docs/cli.md) — CLI reference
+
+## License
+
+MIT — see [LICENSE](LICENSE).

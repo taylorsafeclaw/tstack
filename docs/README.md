@@ -10,7 +10,7 @@ Personal dev framework for Claude Code. Three tiers, opinionated quality pipelin
 | [cli.md](cli.md) | Rust CLI reference (`tai`, `tai doctor`, etc.) |
 | [tiers.md](tiers.md) | Task / Feature / Mission — when to use each |
 | [commands.md](commands.md) | Full command reference (all 23 slash commands) |
-| [agents.md](agents.md) | Available agents + SafeClaw template agents |
+| [agents.md](agents.md) | Available agents + project template agents |
 | [skills.md](skills.md) | Skills system and all available skills |
 | [hooks.md](hooks.md) | Hook scripts and configuration |
 | [quality-pipeline.md](quality-pipeline.md) | Lint, build, test, browser — how it works |

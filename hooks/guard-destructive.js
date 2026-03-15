@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * guard-dangerous — PreToolUse hook
- * Blocks dangerous commands: npm/yarn (enforce pnpm), git reset --hard, rm -rf on project dirs.
+ * guard-destructive — PreToolUse hook
+ * Blocks dangerous destructive commands: git reset --hard, rm -rf on root/home/current dirs.
  *
- * Hook config:
+ * Hook config (~/.claude/settings.json):
  * {
  *   "hooks": {
  *     "PreToolUse": [{
  *       "matcher": "Bash",
- *       "command": "node ~/Development/tai/hooks/guard-dangerous.js"
+ *       "command": "node ~/tai/hooks/guard-destructive.js"
  *     }]
  *   }
  * }
@@ -23,17 +23,8 @@ process.stdin.on('end', () => {
     const toolInput = data.tool_input || {};
     const command = toolInput.command || '';
 
-    // Block npm and yarn (enforce pnpm)
-    if (command.match(/\b(npm|yarn)\s+(install|add|remove|i)\b/)) {
-      process.stdout.write(JSON.stringify({
-        decision: "block",
-        reason: "Use pnpm instead of npm/yarn. Run: pnpm install, pnpm add, etc."
-      }));
-      process.exit(2);
-    }
-
     // Block git reset --hard without specific ref
-    else if (command.match(/\bgit\s+reset\s+--hard\b/)) {
+    if (command.match(/\bgit\s+reset\s+--hard\b/)) {
       process.stdout.write(JSON.stringify({
         decision: "block",
         reason: "git reset --hard is destructive. Use git stash or git revert instead. If you really need this, ask the user to confirm."

@@ -13,7 +13,7 @@ Command name and purpose: $ARGUMENTS
 
 ## Step 1 — Clarify placement
 
-- **Global core** (`~/Development/tai/commands/`) — workflow commands for any project
+- **Global core** (`~/tai/commands/`) — workflow commands for any project
 - **Project** (`.claude/commands/`) — project-specific workflows
 
 ## Step 2 — Clarify model
@@ -57,7 +57,7 @@ $ARGUMENTS description.
 
 Write to the appropriate directory. If global:
 ```bash
-~/Development/tai/setup  # re-symlinks
+~/tai/setup  # re-symlinks
 ```
 
 Confirm with the user where it was placed.

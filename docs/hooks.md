@@ -29,13 +29,17 @@ Useful for debugging Agent Team coordination and understanding agent performance
 
 Prevents accidental pushes directly to main/master. Forces feature branch workflow.
 
-### `guard-dangerous.js`
+### `guard-destructive.js` (default)
 **Event:** `PreToolUse` (matcher: `Bash`)
 
-Blocks dangerous commands:
-- `npm install` / `yarn install` → use pnpm instead
+Blocks dangerous destructive commands:
 - `git reset --hard` → use git stash or git revert
 - `rm -rf /` or `rm -rf ~` or `rm -rf .` → too dangerous
+
+### `guard-pnpm.js` (opt-in, opinionated)
+**Event:** `PreToolUse` (matcher: `Bash`)
+
+Blocks npm/yarn commands, enforcing pnpm as the package manager. Only add this if your project uses pnpm exclusively.
 
 ## Configuration
 
@@ -47,23 +51,32 @@ Add hooks to `.claude/settings.json`:
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "command": "node ~/Development/tai/hooks/tai-quality-gate.js"
+        "command": "node ~/tai/hooks/tai-quality-gate.js"
       },
       {
         "matcher": "Bash",
-        "command": "node ~/Development/tai/hooks/tai-branch-guard.js"
+        "command": "node ~/tai/hooks/tai-branch-guard.js"
       },
       {
         "matcher": "Bash",
-        "command": "node ~/Development/tai/hooks/guard-dangerous.js"
+        "command": "node ~/tai/hooks/guard-destructive.js"
       }
     ],
     "SubagentStop": [
       {
-        "command": "node ~/Development/tai/hooks/tai-agent-return-validator.js"
+        "command": "node ~/tai/hooks/tai-agent-return-validator.js"
       }
     ]
   }
+}
+```
+
+To also enforce pnpm (opt-in):
+
+```json
+{
+  "matcher": "Bash",
+  "command": "node ~/tai/hooks/guard-pnpm.js"
 }
 ```
 
