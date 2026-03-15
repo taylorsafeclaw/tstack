@@ -23,10 +23,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
       - name: Install dependencies
-        run: cd docs-site && npm install
+        run: cd docs-site && pnpm install
       - name: Build Starlight site
-        run: cd docs-site && npm run build
+        run: cd docs-site && pnpm build
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

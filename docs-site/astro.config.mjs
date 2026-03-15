@@ -6,9 +6,9 @@ export default defineConfig({
     starlight({
       title: 'tai',
       description: 'Personal dev framework for Claude Code',
-      social: {
-        github: 'https://github.com/tai-framework/tai',
-      },
+      social: [
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/tai-framework/tai' },
+      ],
       sidebar: [
         {
           label: 'Getting Started',
