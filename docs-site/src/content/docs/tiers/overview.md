@@ -1,0 +1,124 @@
+---
+title: "Tiers: Task / Feature / Mission"
+description: The three work tiers and how to choose between them
+---
+
+tai organizes work into three tiers based on scope and coordination needs.
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  TIER 1: TASK                                           │
+│  Minutes. One agent. One commit. No PR.                 │
+│  /tai-task "fix the submit button color"                │
+├──────────────────────────────────────────────────────────┤
+│  TIER 2: FEATURE                                        │
+│  Hours. Agent Team. Atomic commits. PR.                 │
+│  /tai-feature "add workspace pause/resume"              │
+├──────────────────────────────────────────────────────────┤
+│  TIER 3: MISSION                                        │
+│  Days/weeks. Multiple features. Multiple PRs.           │
+│  /tai-mission "build workspace management"              │
+└──────────────────────────────────────────────────────────┘
+```
+
+## Choosing the right tier
+
+| Signal | Tier |
+|--------|------|
+| Fix a bug, change a color, rename something | Task |
+| Add a feature, build a flow, connect X to Y | Feature |
+| Build an entire system, rebuild from scratch | Mission |
+| Touches 1–3 files, single domain | Task |
+| Touches 3–10 files, may cross domains | Feature |
+| Touches 10+ files, needs multiple features | Mission |
+| Minutes of work | Task |
+| Hours of work | Feature |
+| Days or weeks of work | Mission |
+
+When in doubt, start smaller — a task can always be promoted to a feature if it grows.
+
+---
+
+## Tier 1: Task
+
+**Command:** `/tai-task`
+
+**Pipeline:**
+```
+context (fast Explore) → implement → lint + build + test → commit
+```
+
+- No plan file — too small
+- No PR — commits to current branch
+- No Agent Team — one agent, single shot
+- No browser tests — too small to warrant it
+- Stops on quality failure — never commits broken code
+
+**Model:** sonnet
+
+**Example:**
+```
+/tai-task "fix the workspace card status badge color — it should be green for running"
+```
+
+---
+
+## Tier 2: Feature
+
+**Command:** `/tai-feature`
+
+**Pipeline:**
+```
+context → plan → confirm → branch → Agent Team → quality → push → PR
+```
+
+- Plan presented before any implementation starts (user confirms)
+- Feature branch created automatically (`feat/<slug>`)
+- Agent Team handles vertical slices (backend first, then frontend)
+- Each agent commits its chunk atomically
+- Full quality pipeline at the end
+- PR opened via `gh pr create`
+
+**Model:** opus (context + planning), sonnet (implementation)
+
+**Manual decomposed flow** (step-by-step control):
+```
+/tai-context "pause/resume"   → gather context
+/tai-plan "pause/resume"      → write plan, confirm
+/tai-implement plan.md        → Agent Team executes
+/tai-validate                 → quality pipeline
+/tai-commit                   → commit
+/tai-ship                     → open PR
+```
+
+**Example:**
+```
+/tai-feature "add workspace pause/resume — pause stops the machine, resume restarts it"
+```
+
+---
+
+## Tier 3: Mission
+
+**Command:** `/tai-mission`
+
+**Pipeline:**
+```
+scope codebase → produce ROADMAP.md → create state.json → per-feature loop:
+  /tai-scope → /tai-plan → /tai-execute → /tai-verify → /tai-next → repeat
+```
+
+- ROADMAP.md defines numbered features with success criteria
+- `.tai/state.json` tracks progress across sessions
+- Each feature is a self-contained tier-2 pipeline with its own branch and PR
+- `/tai-next` closes the current feature (verify → PR → advance)
+- State persists across Claude Code sessions — missions can span days or weeks
+
+**Model:** opus (mission planning + scoping), sonnet (execution), haiku (verification)
+
+**Example:**
+```
+/tai-mission "build the full workspace management system — pause, resume, archive, restore, billing"
+```
+
+See [Missions](/tiers/missions/) for the full mission workflow and state format.
