@@ -1,67 +1,53 @@
 ---
-title: tai — Personal dev framework for Claude Code
-description: Three-tier workflow, quality pipeline, plug-and-play agents for Claude Code
+title: tai
+description: Ship code with structure. A dev framework for Claude Code.
 template: splash
 hero:
-  tagline: Three tiers. Opinionated quality. Plug-and-play agents for Claude Code.
+  title: "Stop prompting.<br/>Start shipping."
+  tagline: "tai is a dev framework for Claude Code — three work tiers, a quality gate that never skips, and agents that coordinate so you don't have to."
   actions:
     - text: Get Started
       link: /getting-started/install/
       icon: right-arrow
       variant: primary
-    - text: View on GitHub
+    - text: GitHub
       link: https://github.com/tai-framework/tai
       icon: external
 ---
 
-## Install in one command
+## How it works
+
+You tell Claude Code what to build. tai decides how.
+
+**One command. The right scope.**
+
+`/tai-task` — fix, rename, tweak. Minutes. Single commit.
+
+`/tai-feature` — build a flow, add a page, connect systems. Hours. Opens a PR.
+
+`/tai-mission` — build an entire system. Days. Multiple PRs, tracked state.
+
+Every tier runs the same quality gate: `lint → build → test`. No broken code ships.
+
+---
+
+## Pure markdown. Zero dependencies.
+
+tai is 23 slash commands, 2 agents, 8 skills, and 5 hooks — all plain `.md` files symlinked to `~/.claude/`.
 
 ```bash
 git clone https://github.com/tai-framework/tai.git ~/tai && ~/tai/setup
 ```
 
-Symlinks all commands, agents, and skills to `~/.claude/`. No binaries, no dependencies — pure markdown.
+That's it. No packages. No runtime. No config files.
 
-## Three tiers for every scope of work
+---
 
-| Tier | Command | Scope | Outcome |
-|------|---------|-------|---------|
-| **Task** | `/tai-task` | Minutes, 1–3 files | Single commit, no PR |
-| **Feature** | `/tai-feature` | Hours, 3–10 files | Agent Team, PR |
-| **Mission** | `/tai-mission` | Days/weeks, 10+ files | Multiple features, multiple PRs |
+## What you get
 
-### Pick the right tier
-
-- Fix a bug, change a color, rename something → **Task**
-- Add a feature, build a flow, connect systems → **Feature**
-- Build an entire system from scratch → **Mission**
-
-When in doubt, start smaller. A task can always be promoted to a feature.
-
-## Quality pipeline — no opt-out
-
-Every tier runs this after implementation:
-
-```
-1. pnpm lint    (always)
-2. pnpm build   (always)
-3. pnpm test    (always)
-4. browser      (smart detect)
-
-Stop on first failure. Never commit broken code.
-```
-
-## What's included
-
-- **23 slash commands** — task, feature, mission, debug, refactor, review, commit, ship, and more
-- **2 global agents** — `tai-explorer` (read-only context) and `tai-implementer` (fallback implementation)
-- **8 skills** — research, audit, test generation, changelog, dogfood testing, and more
-- **5 hooks** — quality gate, branch guard, destructive command protection
-
-## Optional CLI
-
-```bash
-cd ~/tai/cli && cargo install --path .
-```
-
-`tai doctor`, `tai list`, `tai add` — power tools for managing your setup.
+- **Structured tiers** — stop guessing whether this is a task or a feature
+- **Quality gate** — lint, build, test after every change. No opt-out.
+- **Agent coordination** — features spawn the right agents and merge their work
+- **Session continuity** — `/tai-resume` picks up where you left off
+- **Missions** — multi-day work tracked with ROADMAP.md and state.json
+- **Extensions** — add project-specific commands, agents, and skills

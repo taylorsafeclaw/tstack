@@ -5,6 +5,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'tai',
+      customCss: ['./src/styles/custom.css'],
       description: 'Personal dev framework for Claude Code',
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/tai-framework/tai' },
