@@ -22,7 +22,7 @@ export function DocsHeader({ title }: { title?: string }) {
         </p>
       )}
       {title && (
-        <h1 className="font-mono text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+        <h1 className="font-mono text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
           {title}
         </h1>
       )}

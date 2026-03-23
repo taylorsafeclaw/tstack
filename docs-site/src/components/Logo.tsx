@@ -20,7 +20,7 @@ export function Logo(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
     <span className="flex items-center gap-2" aria-label="tstack">
       <Logomark className="h-7 w-7 text-lime-400" />
-      <span className="font-display text-lg font-bold tracking-tighter text-slate-900 uppercase dark:text-white">
+      <span className="font-mono text-base font-semibold tracking-tight text-neutral-900 dark:text-white">
         tstack
       </span>
     </span>
