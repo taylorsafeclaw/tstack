@@ -402,7 +402,7 @@ export function Hero() {
                       borderWidth={2}
                       pathRound={0}
                     />
-                    <Button href="/">
+                    <Button href="/docs/quickstart">
                       <span className="font-mono text-sm font-bold tracking-wider uppercase">
                         Get started →
                       </span>
