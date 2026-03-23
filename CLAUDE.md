@@ -31,6 +31,7 @@ tstack/
 ├── cli/                        ← Rust CLI (`tstack doctor`, `tstack add`, etc.)
 │   ├── Cargo.toml
 │   └── src/
+├── docs-site/                  ← marketing/docs site (Next.js 16 + Markdoc, has own CLAUDE.md)
 ├── templates/                  ← project-specific extension templates
 │   └── example/                ← minimal template stub
 ├── extensions/                 ← personal add-ons (gitignored)
