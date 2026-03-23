@@ -121,7 +121,7 @@ export function Hero() {
               </BlurFade>
               <BlurFade delay={0.2} direction="up">
                 <div className="mt-10 flex gap-4 md:justify-center lg:justify-start">
-                  <div className="relative">
+                  <div className="relative flex">
                     <BorderBeam
                       size={80}
                       duration={4}
