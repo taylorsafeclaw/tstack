@@ -1,17 +1,5 @@
 pre[class*='language-'] {
-  color: var(--color-neutral-50);
-  position: relative;
-}
-
-/* Subtle noise texture for code block depth */
-pre[class*='language-']::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0.015;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  pointer-events: none;
-  mix-blend-mode: overlay;
+  color: var(--color-slate-50);
 }
 
 .token.tag,
@@ -28,7 +16,7 @@ pre[class*='language-']::before {
 .token.rule,
 .token.pseudo-class,
 .token.important {
-  color: var(--color-neutral-300);
+  color: var(--color-slate-300);
 }
 
 .token.module {
@@ -44,7 +32,7 @@ pre[class*='language-']::before {
 
 .token.punctuation,
 .token.attr-equals {
-  color: var(--color-neutral-500);
+  color: var(--color-slate-500);
 }
 
 .token.unit,
@@ -55,5 +43,5 @@ pre[class*='language-']::before {
 .token.comment,
 .token.operator,
 .token.combinator {
-  color: var(--color-neutral-400);
+  color: var(--color-slate-400);
 }

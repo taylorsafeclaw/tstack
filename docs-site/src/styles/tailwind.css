@@ -36,8 +36,8 @@
   --text-9xl: 8rem;
   --text-9xl--line-height: 1;
 
-  --font-sans: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
-  --font-display: var(--font-display, var(--font-mono));
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-mono);
   --font-display--font-feature-settings: 'ss01';
   --font-mono: var(--font-mono);
 
