@@ -6,6 +6,9 @@ import { BlurFade } from '@/components/ui/blur-fade'
 import { BorderBeam } from '@/components/ui/border-beam'
 import { FlickeringGrid } from '@/components/ui/flickering-grid'
 
+// --- Constants ---
+const SPINNER = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+
 // --- Types ---
 interface TermLine {
   text: string
@@ -18,10 +21,44 @@ function sleep(ms: number): Promise<void> {
 }
 
 function charDelay(char: string, base: number): number {
-  if (char === ' ') return base * 1.5
-  if (char === '"' || char === "'") return base * 1.8
+  if (char === ' ') return base * 1.6
+  if (char === '"' || char === "'") return base * 2.2
   if (char === '/') return base * 0.7
-  return base + Math.random() * base * 0.4
+  return base + Math.random() * base * 0.5
+}
+
+function renderBar(progress: number, width = 18): string {
+  const filled = progress * width
+  const fullBlocks = Math.floor(filled)
+  const partial = filled - fullBlocks
+  const blocks = [' ', '▏', '▎', '▍', '▌', '▋', '▊', '▉', '█']
+
+  let bar = ''
+  for (let i = 0; i < width; i++) {
+    if (i < fullBlocks) {
+      bar += '█'
+    } else if (i === fullBlocks && partial > 0.05) {
+      bar += blocks[Math.min(Math.round(partial * 8), 8)]
+    } else {
+      bar += '░'
+    }
+  }
+  return bar
+}
+
+// --- Spinner Sub-component ---
+function SpinnerLine({ text }: { text: string }) {
+  const [frame, setFrame] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setFrame((f) => (f + 1) % SPINNER.length), 80)
+    return () => clearInterval(id)
+  }, [])
+  return (
+    <div className="text-neutral-500">
+      {'  '}
+      <span className="text-lime-400/60">{SPINNER[frame]}</span> {text}
+    </div>
+  )
 }
 
 // --- Animated Terminal ---
@@ -29,6 +66,9 @@ function AnimatedTerminal() {
   const [lines, setLines] = useState<TermLine[]>([])
   const [typing, setTyping] = useState<TermLine | null>(null)
   const [progressLine, setProgressLine] = useState<TermLine | null>(null)
+  const [spinnerText, setSpinnerText] = useState<string | null>(null)
+  const [status, setStatus] = useState({ phase: 'READY', detail: '' })
+  const [bodyOpacity, setBodyOpacity] = useState(1)
   const cancelRef = useRef(false)
   const bodyRef = useRef<HTMLDivElement>(null)
 
@@ -36,17 +76,17 @@ function AnimatedTerminal() {
   useEffect(() => {
     const el = bodyRef.current
     if (el) el.scrollTop = el.scrollHeight
-  }, [lines, typing, progressLine])
+  }, [lines, typing, progressLine, spinnerText])
 
   useEffect(() => {
     cancelRef.current = false
     const dead = () => cancelRef.current
 
-    const emit = (text: string, className: string = '') => {
+    const emit = (text: string, className = '') => {
       if (!dead()) setLines((p) => [...p, { text, className }])
     }
 
-    const typeCmd = async (text: string, speed = 45) => {
+    const typeCmd = async (text: string, speed = 60) => {
       for (let i = 0; i <= text.length; i++) {
         if (dead()) return
         setTyping({ text: text.slice(0, i), className: 'text-white' })
@@ -57,92 +97,128 @@ function AnimatedTerminal() {
       emit(text, 'text-white')
     }
 
-    const out = async (text: string, cls: string, ms = 120) => {
+    const out = async (text: string, cls: string, ms = 250) => {
       if (dead()) return
       await sleep(ms)
       emit(text, cls)
     }
 
+    const spin = async (text: string, duration: number) => {
+      if (dead()) return
+      setSpinnerText(text)
+      await sleep(duration)
+      if (dead()) return
+      setSpinnerText(null)
+    }
+
     const bar = async (label: string) => {
-      const pad = label.padEnd(9)
-      for (let i = 0; i <= 10; i++) {
+      const pad = label.padEnd(10)
+      const steps = 30
+      for (let i = 0; i <= steps; i++) {
         if (dead()) return
-        const filled = '█'.repeat(i)
-        const empty = '░'.repeat(10 - i)
+        const progress = i / steps
+        const pct = Math.round(progress * 100)
+          .toString()
+          .padStart(3)
+        const barStr = renderBar(progress, 18)
         setProgressLine({
-          text: `    ${pad} ${filled}${empty}`,
-          className: 'text-neutral-600',
+          text: `  ${pad} ${barStr}  ${pct}%`,
+          className: i < steps ? 'text-neutral-600' : 'text-lime-400',
         })
-        await sleep(40 + Math.random() * 20)
+        await sleep(35 + Math.random() * 20)
       }
       if (dead()) return
       setProgressLine(null)
-      emit(`    ${pad} ██████████ done`, 'text-lime-400')
+      emit(`  ${pad} ${'█'.repeat(18)}  done`, 'text-lime-400')
     }
 
     async function loop() {
       while (!dead()) {
+        // Reset state
         setLines([])
         setTyping(null)
         setProgressLine(null)
-        await sleep(600)
+        setSpinnerText(null)
+        setStatus({ phase: 'READY', detail: '' })
+
+        // Fade in
+        setBodyOpacity(1)
+        await sleep(800)
 
         // ─── Act 1: Install ───
-        await typeCmd('$ tstack install')
-        await out('  ✓ plugin registered', 'text-lime-400', 280)
+        setStatus({ phase: 'INSTALL', detail: 'initializing' })
+        await typeCmd('$ tstack install', 55)
+        await spin('registering plugin\u2026', 800)
+        await out('  \u2713 plugin registered', 'text-lime-400', 200)
         await out(
-          '  ✓ 24 commands · 6 agents · 18 skills',
+          '  \u2713 24 commands \u00B7 6 agents \u00B7 18 skills',
           'text-lime-400',
-          180,
+          350,
         )
-        await sleep(500)
+        await sleep(900)
         emit('', '')
 
         // ─── Act 2: Task (sonnet) ───
-        await typeCmd('$ /task "add dark mode toggle"', 32)
-        await out('  → sonnet analyzing scope...', 'text-neutral-500', 380)
-        await sleep(650)
-        await out('  ✓ 2 files modified', 'text-lime-400', 140)
-        await out('  ✓ lint · build · test passing', 'text-lime-400', 180)
+        setStatus({ phase: 'TASK', detail: 'sonnet' })
+        await typeCmd('$ /task "add dark mode toggle"', 48)
+        await spin('sonnet \u00B7 analyzing scope\u2026', 1400)
+        await out('  \u2713 2 files changed', 'text-lime-400', 200)
         await out(
-          '  ✓ committed: feat(ui): dark mode toggle',
+          '  \u2713 lint \u00B7 build \u00B7 test passing',
           'text-lime-400',
-          180,
+          400,
         )
-        await sleep(500)
+        await out(
+          '  \u2713 commit: feat(ui): dark mode toggle',
+          'text-lime-400',
+          400,
+        )
+        await sleep(900)
         emit('', '')
 
         // ─── Act 3: Feature (agent team) ───
-        await typeCmd('$ /feature "user authentication"', 28)
+        setStatus({ phase: 'FEATURE', detail: 'opus \u2192 4 agents' })
+        await typeCmd('$ /feature "user authentication"', 40)
+        await spin('opus \u00B7 planning architecture\u2026', 1600)
         await out(
-          '  → opus planning architecture...',
-          'text-neutral-500',
-          450,
+          '  \u2713 plan ready \u00B7 dispatching agents',
+          'text-lime-400',
+          200,
         )
-        await sleep(420)
-        await out('  → dispatching agent team:', 'text-neutral-500', 280)
-        await sleep(180)
+        await sleep(300)
+        emit('', '')
 
         await bar('schema')
         await bar('backend')
         await bar('frontend')
         await bar('tests')
 
+        await sleep(400)
         await out(
-          '  ✓ PR #42 created → ready for review',
+          '  \u2713 PR #42 created \u2192 ready for review',
           'text-lime-400',
-          350,
+          500,
         )
-        await sleep(500)
+        await sleep(900)
         emit('', '')
 
         // ─── Act 4: Ship ───
-        await typeCmd('$ /ship', 55)
-        await out('  ✓ quality gates passed', 'text-lime-400', 350)
-        await out('  ✓ pushed to main', 'text-lime-400', 220)
-        await out('  ✓ deployed', 'text-lime-400', 220)
+        setStatus({ phase: 'SHIP', detail: 'main' })
+        await typeCmd('$ /ship', 70)
+        await spin('running quality gates\u2026', 1000)
+        await out('  \u2713 quality gates passed', 'text-lime-400', 200)
+        await out('  \u2713 pushed to main', 'text-lime-400', 400)
+        await out('  \u2713 deployed', 'text-lime-400', 400)
+        setStatus({ phase: 'DEPLOYED', detail: '\u2713' })
 
-        await sleep(5000)
+        // Hold, then seamless transition
+        await sleep(6000)
+        if (dead()) return
+
+        // Fade out
+        setBodyOpacity(0)
+        await sleep(700)
+        if (dead()) return
       }
     }
 
@@ -167,25 +243,27 @@ function AnimatedTerminal() {
 
       {/* Terminal */}
       <div className="relative overflow-hidden border-2 border-neutral-800 bg-[#0a0a0a]">
-        {/* Title bar */}
-        <div className="flex items-center gap-2 border-b border-neutral-800 px-4 py-2.5">
-          <div className="flex gap-1.5">
-            <div className="h-[9px] w-[9px] bg-[#ff5f57]" />
-            <div className="h-[9px] w-[9px] bg-[#febc2e]" />
-            <div className="h-[9px] w-[9px] bg-[#28c840]" />
-          </div>
-          <span className="ml-2 font-mono text-[11px] tracking-wider text-neutral-600 select-none">
-            tstack — ~/myproject
+        {/* TUI Title bar */}
+        <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-2">
+          <span className="font-mono text-[11px] font-bold tracking-widest text-lime-400 uppercase select-none">
+            tstack
+          </span>
+          <span className="font-mono text-[10px] tracking-wider text-neutral-600 select-none">
+            ~/myproject
           </span>
         </div>
 
         {/* Body */}
         <div
           ref={bodyRef}
-          className="h-[380px] overflow-hidden px-5 py-4 font-mono text-[13px] leading-[1.75]"
+          className="h-[340px] overflow-hidden px-5 py-4 font-mono text-[13px] leading-[1.85]"
+          style={{
+            opacity: bodyOpacity,
+            transition: 'opacity 600ms ease-in-out',
+          }}
         >
           {lines.map((line, i) => (
-            <div key={i} className={line.className || 'h-[1.75em]'}>
+            <div key={i} className={line.className || 'h-[1.85em]'}>
               {line.text || '\u00A0'}
             </div>
           ))}
@@ -195,6 +273,9 @@ function AnimatedTerminal() {
             <div className={progressLine.className}>{progressLine.text}</div>
           )}
 
+          {/* Spinner */}
+          {spinnerText && <SpinnerLine text={spinnerText} />}
+
           {/* Typing line with cursor */}
           {typing ? (
             <div className={typing.className}>
@@ -202,11 +283,36 @@ function AnimatedTerminal() {
               <span className="ml-px inline-block h-[1.05em] w-[0.55em] translate-y-[2px] animate-pulse bg-lime-400" />
             </div>
           ) : (
-            !progressLine && (
+            !progressLine &&
+            !spinnerText &&
+            bodyOpacity === 1 && (
               <div>
                 <span className="inline-block h-[1.05em] w-[0.55em] translate-y-[2px] animate-pulse bg-lime-400" />
               </div>
             )
+          )}
+        </div>
+
+        {/* Status bar */}
+        <div className="flex items-center justify-between border-t border-neutral-800 px-4 py-1.5">
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-block h-1.5 w-1.5 ${
+                status.phase === 'DEPLOYED'
+                  ? 'bg-lime-400'
+                  : status.phase === 'READY'
+                    ? 'bg-neutral-700'
+                    : 'bg-lime-400 animate-pulse'
+              }`}
+            />
+            <span className="font-mono text-[10px] font-bold tracking-widest text-neutral-500 uppercase select-none">
+              {status.phase}
+            </span>
+          </div>
+          {status.detail && (
+            <span className="font-mono text-[10px] tracking-wider text-neutral-600 select-none">
+              {status.detail}
+            </span>
           )}
         </div>
 
@@ -236,7 +342,7 @@ function AnimatedTerminal() {
 // --- Hero ---
 export function Hero() {
   return (
-    <div className="relative overflow-hidden bg-[#0a0a0a] dark:-mt-19 dark:-mb-32 dark:pt-19 dark:pb-32">
+    <div className="relative overflow-hidden bg-[#0a0a0a] dark:-mt-19 dark:pt-19">
       {/* Flickering grid background */}
       <div
         className="pointer-events-none absolute inset-0 z-0"
