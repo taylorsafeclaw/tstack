@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "setup": "ln -s \"$CONDUCTOR_ROOT_PATH/docs-site/.env.local\" docs-site/.env.local 2>/dev/null; cd docs-site && pnpm install",
+    "run": "cd docs-site && pnpm dev",
+    "archive": "rm -rf docs-site/node_modules docs-site/.next"
+  }
+}
