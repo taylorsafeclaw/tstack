@@ -10,6 +10,7 @@
 //! builder once and all tests adapt.
 
 use std::fs;
+#[cfg(unix)]
 use std::os::unix::fs as unix_fs;
 use std::path::{Path, PathBuf};
 use tempfile::TempDir;
@@ -125,6 +126,7 @@ impl TstackFixture {
     // ── Symlink helpers ─────────────────────────────────────────────────
 
     /// Create a symlink in the claude target dir pointing to a source file.
+    #[cfg(unix)]
     pub fn link_file(&self, target_subdir: &str, filename: &str, source: &Path) -> PathBuf {
         let dest = self.claude_dir.join(target_subdir).join(filename);
         if let Some(parent) = dest.parent() {
@@ -145,6 +147,7 @@ impl TstackFixture {
     }
 
     /// Create a broken symlink (points to nonexistent target).
+    #[cfg(unix)]
     pub fn place_broken_symlink(&self, target_subdir: &str, filename: &str) -> PathBuf {
         let dest = self.claude_dir.join(target_subdir).join(filename);
         if let Some(parent) = dest.parent() {

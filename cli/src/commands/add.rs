@@ -35,7 +35,6 @@ fn add_command(config: &TstackConfig, name: &str) -> Result<()> {
     let model: String = cliclack::select("Model:")
         .item("sonnet", "Sonnet", "fast, good for implementation")
         .item("opus", "Opus", "deep thinking, planning")
-        .item("haiku", "Haiku", "lightweight, validation")
         .interact()
         .map(|s: &str| s.to_string())?;
 
@@ -84,7 +83,6 @@ fn add_agent(config: &TstackConfig, name: &str) -> Result<()> {
     let model: String = cliclack::select("Model:")
         .item("sonnet", "Sonnet", "fast, good for implementation")
         .item("opus", "Opus", "deep thinking, planning")
-        .item("haiku", "Haiku", "lightweight, validation")
         .interact()
         .map(|s: &str| s.to_string())?;
 

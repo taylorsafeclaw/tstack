@@ -14,7 +14,7 @@ Agent name and purpose: $ARGUMENTS
 ## Step 1 — Clarify placement
 
 Ask (or infer from context):
-- **Global (`~/tstack/agents/`) — general-purpose, useful in any project`) — general-purpose, useful in any project
+- **Global** (`~/tstack/agents/`) — general-purpose, useful in any project
 - **Project** (`.claude/agents/`) — project-specific, uses project patterns
 
 If the agent references project-specific things (Convex, specific UI patterns), it's project-level.

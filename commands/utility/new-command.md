@@ -13,7 +13,7 @@ Command name and purpose: $ARGUMENTS
 
 ## Step 1 — Clarify placement
 
-- **Global core (`~/tstack/commands/`) — workflow commands for any project`) — workflow commands for any project
+- **Global core** (`~/tstack/commands/`) — workflow commands for any project
 - **Project** (`.claude/commands/`) — project-specific workflows
 
 ## Step 2 — Clarify model

@@ -32,7 +32,7 @@ function findMdFiles(dir, base = dir) {
     const rel = path.relative(base, full);
     if (entry.isDirectory()) {
       results.push(...findMdFiles(full, base));
-    } else if (entry.name.endsWith(".md")) {
+    } else if (entry.name.endsWith(".md") && entry.name !== "README.md") {
       results.push(rel);
     }
   }
