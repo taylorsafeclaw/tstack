@@ -1,3 +1,4 @@
+use std::io::Write;
 use anyhow::Result;
 use crate::config::TstackConfig;
 use crate::frontmatter::Frontmatter;
@@ -156,8 +157,6 @@ pub fn run() -> Result<()> {
 
     Ok(())
 }
-
-use std::io::Write;
 
 fn check_items(label: &str, items: &[TstackItem]) {
     let healthy = items.iter().filter(|i| i.status.is_healthy()).count();

@@ -302,7 +302,7 @@ The CLI provides `tstack doctor`, `tstack add`, `tstack list`, `tstack install`,
 | Crate | Version | Purpose | Notes |
 |-------|---------|---------|-------|
 | **clap** | 4 (derive) | Arg parsing | Uses `#[derive(Parser, Subcommand, ValueEnum)]` — no builder pattern |
-| **owo-colors** | 4 | Terminal colors | Trait-based: `"text".green()`, not macro-based |
+| **cliclack** | 0.3 | Interactive prompts | Spinners, confirm dialogs, intro/outro wrappers |
 | **comfy-table** | 7 | Table rendering | Used in `tstack list` output |
 | **serde** + **serde_yaml** | 1 / 0.9 | YAML frontmatter parsing | Deserialize command/agent/skill frontmatter |
 | **dirs** | 6 | Home dir resolution | `dirs::home_dir()` for `~/.claude/` paths |
@@ -340,7 +340,7 @@ cli/src/
 
 - All commands return `anyhow::Result<()>`
 - Use `clap` derive macros, not builder
-- Colors via `owo-colors` traits, not crossterm `SetForegroundColor` (except `ui.rs` which needs raw terminal control)
+- Colors via `ui::write_rgb()` helper — all RGB constants defined in `ui.rs`
 - Frontmatter parsing goes through `frontmatter.rs`, not ad-hoc serde
 
 ## Documentation

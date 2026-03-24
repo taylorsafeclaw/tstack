@@ -1,7 +1,6 @@
 use crossterm::{
     cursor, execute,
     style::{Color, SetForegroundColor, ResetColor},
-    terminal,
 };
 use std::io::{self, Write};
 use std::time::Duration;
@@ -101,8 +100,7 @@ pub fn print_logo(version: &str) {
     let grid = build_logo_grid();
     let total_cols = grid[0].len();
 
-    let can_animate = terminal::is_raw_mode_enabled().is_ok()
-        && std::env::var("NO_COLOR").is_err()
+    let can_animate = std::env::var("NO_COLOR").is_err()
         && std::env::var("CI").is_err()
         && atty_stdout();
 
@@ -240,11 +238,8 @@ fn print_logo_static(version: &str) {
 }
 
 fn atty_stdout() -> bool {
-    use std::os::unix::io::AsRawFd;
-    extern "C" {
-        fn isatty(fd: i32) -> i32;
-    }
-    unsafe { isatty(io::stdout().as_raw_fd()) != 0 }
+    use std::io::IsTerminal;
+    io::stdout().is_terminal()
 }
 
 // ── Dashboard components ───────────────────────────────────────────
